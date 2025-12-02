@@ -1,0 +1,26 @@
+{
+  "users": [
+    {
+      "username": "Admin",
+      "password": "$2b$10$9cYvbYxKfDZZjYwS1Vg18uqZPhJWHdhK/dgVTW8G7o.5AP0SO2N5a",
+      "role": "Administrator"
+    },
+    {
+      "username": "Nurse1",
+      "password": "$2b$10$CwDPVasEAhLG.MerGAzbq.K8T5s58W1cg3uM8kbvkI6PTRiFEHGBe",
+      "role": "User"
+    },
+    {
+      "username": "Nurse2",
+      "password": "$2b$10$k3wriSDE92EYj3b2L.Jk2.hA8JGz3rNFVYGPd2rzTmKZea6zprx5a",
+      "role": "User"
+    },
+    {
+      "username": "Admin2",
+      "password": "$2b$10$49vfdYPX1XFyW1klpi98LuAzpxihEzgDhQ6/FZYVRPQYroI2zZhGO",
+      "role": "Administrator"
+    }
+  ],
+  "activeUser": "Admin",
+  "lastActivity": 1764657262070
+}
