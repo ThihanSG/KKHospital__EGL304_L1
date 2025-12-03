@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - KKH</title>
-    <link rel="stylesheet" href="/index.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Home - KKH</title>
+  <link rel="stylesheet" href="/index.css">
+  <style>
+    /* minimal modal styles so popup is visible; remove if you already have them */
+    .modal { display: none; position: fixed; inset: 0; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
+    .modal .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 320px; }
+    .action-btn { margin: 6px; }
+  </style>
 </head>
-
 <body>
 
-    <header class="topbar">
-        <div class="container">
-            <h2>KK Hospital</h2>
-            <div class="account-info">
-                <span id="username-display">Logged in as: <span id="user"></span></span>
-                <a href="/logout" class="logout-btn" id="logout-btn">Logout</a>
-            </div>
-        </div>
-    </header>
+<header class="topbar">
+  <div class="container">
+    <h2>KK Hospital</h2>
+    <div class="account-info">
+      <span id="username-display">Logged in as: <span id="user"></span></span>
+      <a href="/logout" class="logout-btn" id="logout-btn">Logout</a>
+    </div>
+  </div>
+</header>
 
-    <main class="main-content">
-        <div class="tab-bar">
-            <button class="tab-btn active" data-tab="schedule">Work Schedule</button>
-            <button class="tab-btn" data-tab="create-user">Create Users</button>
-            <button class="tab-btn" data-tab="view-users">View Users</button>
-        </div>
+<main class="main-content">
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="schedule">Work Schedule</button>
+    <button class="tab-btn" data-tab="create-user">Create Users</button>
+    <button class="tab-btn" data-tab="view-users">View Users</button>
+  </div>
 
-        <!-- Schedule Tab -->
+  <!-- Schedule Tab -->
         <div id="tab-schedule" class="tab-section">
             <h1>Work Schedule</h1>
             <table class="schedule-table">
@@ -72,265 +76,228 @@
             </table>
         </div>
 
-        <!-- Create Users Tab -->
-        <div id="tab-create-user" class="tab-section" style="display: none;">
-            <h1>Create User</h1>
-            <form class="create-user-form">
-                <div class="input-group">
-                    <label for="new-username">Username</label>
-                    <input type="text" id="new-username" placeholder="Enter username" required>
-                </div>
-                <div class="input-group">
-                    <label for="new-password">Password</label>
-                    <input type="password" id="new-password" placeholder="Enter password" required>
-                </div>
-                <div class="input-group">
-                    <label for="user-role">Role</label>
-                    <select id="user-role" required>
-                        <option value="" disabled selected>Select role</option>
-                        <option value="Administrator">Administrator</option>
-                        <option value="User">User</option>
-                    </select>
-                </div>
-                <button type="submit" class="action-btn">Create User</button>
-            </form>
-        </div>
+  <div id="tab-create-user" class="tab-section" style="display:none;">
+    <h1>Create User</h1>
+    <form class="create-user-form">
+      <div class="input-group"><label>Username</label><input id="new-username" required></div>
+      <div class="input-group"><label>Password</label><input id="new-password" type="password" required></div>
+      <div class="input-group">
+        <label>Role</label>
+        <select id="user-role" required>
+          <option value="" disabled selected>Select role</option>
+          <option>Administrator</option>
+          <option>User</option>
+        </select>
+      </div>
+      <button type="submit" class="action-btn">Create User</button>
+    </form>
+  </div>
 
-        <!-- View Users Tab -->
-        <div id="tab-view-users" class="tab-section" style="display: none;">
-            <h1>All Users</h1>
-            <table class="users-table">
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="users-list">
-                    <!-- Filled dynamically -->
-                </tbody>
-            </table>
-        </div>
+  <div id="tab-view-users" class="tab-section" style="display:none;">
+    <h1>All Users</h1>
+    <table class="users-table">
+      <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody id="users-list"></tbody>
+    </table>
+  </div>
 
-        <!-- Update User Modal -->
-        <div id="update-user-modal" class="modal">
-            <div class="modal-content modern-modal">
-                <h3>Update User</h3>
-                <form id="update-user-form" class="update-user-form">
-                    <div class="input-group">
-                        <label for="update-username">Username</label>
-                        <input type="text" id="update-username" readonly>
-                    </div>
-                    <div class="input-group">
-                        <label for="update-role">Role</label>
-                        <select id="update-role">
-                            <option value="Administrator">Administrator</option>
-                            <option value="User">User</option>
-                        </select>
-                    </div>
-                    <div class="modal-buttons">
-                        <button type="submit" class="btn-update action-btn">Save</button>
-                        <button type="button" id="cancel-update" class="btn-no action-btn">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+  <!-- Update Modal -->
+  <div id="update-user-modal" class="modal" aria-hidden="true">
+  <div class="modal-content">
+    <h3>Update User</h3>
 
-        <!-- Logout Confirmation Modal -->
-        <div id="logout-modal" class="modal">
-            <div class="modal-content">
-                <p>Are you sure you want to logout?</p>
-                <div class="modal-buttons">
-                    <button id="confirm-logout" class="btn-yes">Yes</button>
-                    <button id="cancel-logout" class="btn-no">No</button>
-                </div>
-            </div>
-        </div>
+    <form id="update-user-form">
+      <div class="input-group">
+        <label for="update-username">Username</label>
+        <input type="text" id="update-username" readonly>
+      </div>
 
-    </main>
+      <div class="input-group">
+        <label for="update-role">Role</label>
+        <select id="update-role">
+          <option>Administrator</option>
+          <option>User</option>
+        </select>
+      </div>
 
-    <script>
-        // Helper to read cookies
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(";").shift();
-        }
+      <div class="modal-buttons">
+        <button type="submit" class="btn-save">Save</button>
+        <button type="button" id="cancel-update" class="btn-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-        const currentUser = getCookie("username");
-        document.getElementById("user").innerText = currentUser || "Unknown";
+</main>
 
-        // Show popup
-        function showPopup(message, type = "info") {
-            const popup = document.createElement("div");
-            popup.className = `popup ${type}`;
-            popup.innerText = message;
-            document.body.appendChild(popup);
-            setTimeout(() => { popup.remove(); }, 3000);
-        }
+<script>
+  // small helper
+  function showPopup(msg, type = "info") {
+    console.log("[popup]", type, msg);
+    const d = document.createElement("div");
+    d.textContent = msg;
+    d.style.position = "fixed";
+    d.style.bottom = "16px";
+    d.style.right = "16px";
+    d.style.background = type === "error" ? "#f88" : "#8f8";
+    d.style.padding = "8px 12px";
+    d.style.borderRadius = "6px";
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 2500);
+  }
 
-        // TAB SWITCHER
-        const tabButtons = document.querySelectorAll(".tab-btn");
-        const tabSections = document.querySelectorAll(".tab-section");
-        tabButtons.forEach(btn => {
-            btn.addEventListener("click", () => {
-                const target = btn.getAttribute("data-tab");
-                tabButtons.forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                tabSections.forEach(section => {
-                    section.style.display = section.id === `tab-${target}` ? "block" : "none";
-                });
-                if (target === "view-users") loadUsers();
-            });
-        });
+  function getCookie(name) {
+    const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  document.getElementById('user').innerText = getCookie('username') || 'Unknown';
 
-        // Create User
-        const createUserForm = document.querySelector(".create-user-form");
-        createUserForm.addEventListener("submit", async e => {
-            e.preventDefault();
-            const username = document.getElementById("new-username").value.trim();
-            const password = document.getElementById("new-password").value;
-            const role = document.getElementById("user-role").value;
+  // Tab switching (calls loadUsers when view-users selected)
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabSections = document.querySelectorAll(".tab-section");
+  tabButtons.forEach(btn => btn.addEventListener("click", () => {
+    const target = btn.dataset.tab;
+    tabButtons.forEach(b => b.classList.remove("active")); btn.classList.add("active");
+    tabSections.forEach(s => s.style.display = s.id === `tab-${target}` ? "block" : "none");
+    if (target === "view-users") loadUsers();
+  }));
 
-            if (!username || !password || !role) {
-                showPopup("Please fill in all fields.", "error");
-                return;
-            }
+  // Create user
+  document.querySelector(".create-user-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const username = document.getElementById("new-username").value.trim();
+    const password = document.getElementById("new-password").value;
+    const role = document.getElementById("user-role").value;
+    if (!username || !password || !role) { showPopup("Please fill in all fields.", "error"); return; }
+    try {
+      const res = await fetch("/create-user", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ username, password, role }) });
+      const data = await res.json();
+      if (data.success) { showPopup("User created!", "success"); e.target.reset(); }
+      else showPopup("Error: " + data.message, "error");
+    } catch (err) { showPopup("Server error: " + err.message, "error"); }
+  });
 
-            try {
-                const res = await fetch("/create-user", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password, role })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showPopup("User created successfully!", "success");
-                    createUserForm.reset();
-                } else {
-                    showPopup("Error: " + data.message, "error");
-                }
-            } catch (err) {
-                showPopup("Server error: " + err.message, "error");
-            }
-        });
+  // LOAD USERS - use createElement and attach listeners directly
+  async function loadUsers() {
+    try {
+      const res = await fetch("/users");
+      const data = await res.json();
+      if (!data.success) { showPopup("Unauthorized or failed to load users", "error"); return; }
 
-        // Load Users
-        async function loadUsers() {
-            try {
-                const res = await fetch("/users");
-                const data = await res.json();
-                if (!data.success) return;
-                const tbody = document.getElementById("users-list");
-                tbody.innerHTML = "";
-                data.users.forEach(user => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${user.username}</td>
-                        <td>${user.role}</td>
-                        <td>
-                            <button class="btn-update" data-username="${user.username}" data-role="${user.role}">Update</button>
-                            <button class="btn-remove" data-username="${user.username}">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                document.querySelectorAll(".btn-update").forEach(btn => btn.addEventListener("click", showUpdatePopup));
-                document.querySelectorAll(".btn-remove").forEach(btn => btn.addEventListener("click", deleteUser));
-            } catch (err) {
-                showPopup("Error loading users: " + err.message, "error");
-            }
-        }
+      const tbody = document.getElementById("users-list");
+      tbody.innerHTML = "";
 
-        // Delete User
-        async function deleteUser(e) {
-            const username = e.target.dataset.username;
-            if (!confirm(`Are you sure you want to delete ${username}?`)) return;
-            try {
-                const res = await fetch("/delete-user", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showPopup("User deleted successfully!", "success");
-                    loadUsers();
-                } else {
-                    showPopup("Error: " + data.message, "error");
-                }
-            } catch (err) {
-                showPopup("Server error: " + err.message, "error");
-            }
-        }
+      data.users.forEach(u => {
+        const tr = document.createElement("tr");
 
-        // Update User Modal
-        const updateModal = document.getElementById("update-user-modal");
-        const updateForm = document.getElementById("update-user-form");
-        const cancelUpdateBtn = document.getElementById("cancel-update");
+        const tdName = document.createElement("td"); tdName.innerText = u.username;
+        const tdRole = document.createElement("td"); tdRole.innerText = u.role;
+        const tdActions = document.createElement("td");
 
-        function showUpdatePopup(e) {
-            const btn = e.target;
-            const username = btn.dataset.username;
-            let role = btn.dataset.role;
-            if (role !== "Administrator" && role !== "User") role = "User";
-            document.getElementById("update-username").value = username;
-            document.getElementById("update-role").value = role;
-            updateModal.style.display = "flex";
-        }
+        const btnUpdate = document.createElement("button");
+        btnUpdate.className = "btn-update";
+        btnUpdate.type = "button";
+        btnUpdate.dataset.username = u.username;
+        btnUpdate.dataset.role = u.role;
+        btnUpdate.innerText = "Update";
+        btnUpdate.addEventListener("click", showUpdatePopup); // direct attach
 
-        cancelUpdateBtn.addEventListener("click", () => {
-            updateModal.style.display = "none";
-        });
+        const btnDelete = document.createElement("button");
+        btnDelete.className = "btn-remove";
+        btnDelete.type = "button";
+        btnDelete.dataset.username = u.username;
+        btnDelete.innerText = "Delete";
+        btnDelete.addEventListener("click", deleteUser);
 
-        updateForm.addEventListener("submit", async e => {
-            e.preventDefault();
-            const username = document.getElementById("update-username").value.trim();
-            const role = document.getElementById("update-role").value;
-            if (!username || !role) {
-                showPopup("Please fill in all fields.", "error");
-                return;
-            }
-            try {
-                const res = await fetch("/update-user", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, role })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showPopup("User updated successfully!", "success");
-                    updateModal.style.display = "none";
-                    loadUsers();
-                } else {
-                    showPopup("Error: " + data.message, "error");
-                }
-            } catch (err) {
-                showPopup("Server error: " + err.message, "error");
-            }
-        });
+        tdActions.append(btnUpdate, " ", btnDelete);
+        tr.append(tdName, tdRole, tdActions);
+        tbody.appendChild(tr);
+      });
+    } catch (err) {
+      showPopup("Error loading users: " + err.message, "error");
+    }
+  }
 
-        // Logout Modal
-        const logoutBtn = document.getElementById("logout-btn");
-        const modal = document.getElementById("logout-modal");
-        const confirmBtn = document.getElementById("confirm-logout");
-        const cancelBtn = document.getElementById("cancel-logout");
+  // Delete user
+  async function deleteUser(e) {
+    const username = e.currentTarget.dataset.username;
+    if (!confirm(`Delete ${username}?`)) return;
+    try {
+      const res = await fetch("/delete-user", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ username })});
+      const data = await res.json();
+      if (data.success) { showPopup("Deleted", "success"); loadUsers(); }
+      else showPopup("Error: " + data.message, "error");
+    } catch (err) { showPopup("Server error: " + err.message, "error"); }
+  }
 
-        logoutBtn.addEventListener("click", e => {
-            e.preventDefault();
-            modal.style.display = "flex";
-        });
+  // Update modal logic
+  const updateModal = document.getElementById("update-user-modal");
+  const updateForm = document.getElementById("update-user-form");
+  const cancelUpdateBtn = document.getElementById("cancel-update");
 
-        confirmBtn.addEventListener("click", () => {
-            modal.style.display = "none";
-            showPopup("You have successfully logged out.", "success");
-            setTimeout(() => { window.location.href = "/logout?loggedOut=manual"; }, 2000);
-        });
+  function showUpdatePopup(e) {
+    // MUST use currentTarget so we always get the element the listener was attached to
+    const btn = e.currentTarget;
+    const username = (btn && btn.dataset && btn.dataset.username) ? btn.dataset.username : null;
+    const role = (btn && btn.dataset && btn.dataset.role) ? btn.dataset.role : 'User';
 
-        cancelBtn.addEventListener("click", () => { modal.style.display = "none"; });
-        window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+    if (!username) {
+      // extremely defensive: try to read from closest button if click bubbled
+      const b = e.target.closest && e.target.closest('button.btn-update');
+      if (b) {
+        console.warn("fallback read from closest button");
+        btn = b;
+      }
+    }
 
-    </script>
+    // store original username in dataset on the form (source of truth)
+    updateForm.dataset.originalUsername = username || '';
+
+    // show it in the readonly input (for user)
+    document.getElementById("update-username").value = username || '';
+
+    // set role select
+    document.getElementById("update-role").value = role;
+
+    // display modal
+    updateModal.style.display = "flex";
+    updateModal.setAttribute('aria-hidden', 'false');
+  }
+
+  cancelUpdateBtn.addEventListener("click", () => {
+    updateModal.style.display = "none";
+    updateModal.setAttribute('aria-hidden', 'true');
+  });
+
+  // Submit update — IMPORTANT: read username from dataset, NOT the readonly input
+  updateForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const originalUsername = (updateForm.dataset.originalUsername || '').toString().trim();
+    const role = document.getElementById("update-role").value;
+
+    if (!originalUsername || !role) { showPopup("Please fill in all fields.", "error"); return; }
+
+    try {
+      const res = await fetch("/update-user", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ username: originalUsername, role }) });
+      const data = await res.json();
+      if (data.success) {
+        showPopup("User updated!", "success");
+        updateModal.style.display = "none";
+        loadUsers();
+      } else {
+        // restore display to avoid showing undefined to user
+        document.getElementById("update-username").value = originalUsername;
+        showPopup("Error: " + data.message, "error");
+      }
+    } catch (err) {
+      document.getElementById("update-username").value = originalUsername;
+      showPopup("Server error: " + err.message, "error");
+    }
+  });
+
+  // initial: show schedule tab (do not auto-load users until user clicks the tab)
+  // if you want to load immediately uncomment:
+  // loadUsers();
+
+</script>
 </body>
 </html>

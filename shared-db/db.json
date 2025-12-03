@@ -18,9 +18,9 @@
     {
       "username": "Admin2",
       "password": "$2b$10$49vfdYPX1XFyW1klpi98LuAzpxihEzgDhQ6/FZYVRPQYroI2zZhGO",
-      "role": "Administrator"
+      "role": "User"
     }
   ],
-  "activeUser": "Admin",
-  "lastActivity": 1764657262070
+  "activeUser": null,
+  "lastActivity": null
 }
