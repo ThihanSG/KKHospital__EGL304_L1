@@ -2,96 +2,147 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page - KK Hospital </title>
-    <link rel="stylesheet" href="/login.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Page - KK Hospital</title>
+  <link rel="stylesheet" href="/login.css">
 </head>
 
 <body>
-    <div class="login-container">
-        <img src="/KKHospital Logo.jpeg" alt="KK Hospital Logo" class="login-logo">
-        <h2>File Sharing System </h2>
-        
-        <p>Enter your name to access the system</p>
-        
-        <form action="/login" method="POST">
-            <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Enter username" required>
-            </div>
-            <!-- <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter password" required>
-            </div> -->
-           <div class="input-group">
-                <label for="password">Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="password" name="password" placeholder="Enter password" required>
-                    <button type="button" id="togglePassword" class="toggle-password">Show</button>
-                </div>
-            </div>
+  <div class="login-container">
+    <img src="/KKHospital Logo.jpeg" alt="KK Hospital Logo" class="login-logo">
+    <h2>File Sharing System</h2>
+
+    <p>Enter your name to access the system</p>
+
+    <!-- LOGIN FORM -->
+    <form action="/login" method="POST">
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter username" required>
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" name="password" placeholder="Enter password" required>
+          <button type="button" id="togglePassword" class="toggle-password">Show</button>
+        </div>
+      </div>
+
+      <button type="submit">Login</button>
+
+      <!-- ⭐ SYSTEM CHECK BOX BELOW LOGIN BUTTON ⭐ -->
+      <div id="system-status" class="system-status-box" style="
+        background: #f5f5f5;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 14px;
+        text-align: left;
+      ">
+        <strong>System Check:</strong>
+        <p id="activeUserText">Checking who is currently using the system...</p>
+
+        <button id="requestLogoutBtn" style="
+          display: none;
+          padding: 6px 12px;
+          margin-top: 8px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          background: #d9534f;
+          color: #fff;
+        ">
+          Request User to Log Off
+        </button>
+      </div>
+    </form>
+
+    <!-- Error message placeholder -->
+    <p class="error-message" id="error-message" style="display: none;">{{message}}</p>
+  </div>
+
+  <!-- ======================================================= -->
+  <!--  JS SECTION – POPUP RESTORED, SYSTEM CHECK WORKING      -->
+  <!-- ======================================================= -->
+  <script>
+
+    /* -------- ORIGINAL POPUP RESTORED -------- */
+    function showPopup(msg, type = "info") {
+        console.log("[popup]", type, msg);
+        const d = document.createElement("div");
+        d.textContent = msg;
+
+        // USE CSS CLASS ONLY — DO NOT OVERRIDE POSITION IN JS
+        d.className = `popup ${type}`;
+
+        document.body.appendChild(d);
+        setTimeout(() => d.remove(), 2500);
+        }
 
 
-            <button type="submit">Login</button>
-        </form>
+    /* -------- Handle logout type messages -------- */
+    const params = new URLSearchParams(window.location.search);
+    const loggedOutType = params.get("loggedOut");
 
-        <!-- Error message placeholder -->
-        <p class="error-message" id="error-message" style="display: none;">{{message}}</p>
-    </div>
-</body>
+    if (loggedOutType === "idle") showPopup("You have been logged out due to inactivity.", "error");
+    if (loggedOutType === "manual") showPopup("You have successfully logged out.", "success");
 
-<script>
-function showPopup(message, type = "info") {
-    const popup = document.createElement("div");
-    popup.className = `popup ${type}`;
-    popup.innerText = message;
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 3000);
-}
+    if (loggedOutType)
+      window.history.replaceState({}, document.title, window.location.pathname);
 
-// Read query param only once
-const params = new URLSearchParams(window.location.search);
-const loggedOutType = params.get("loggedOut");
-
-// Show correct message
-if (loggedOutType === "idle") {
-    showPopup("You have been logged off as you were idle for a minute.", "error");
-} else if (loggedOutType === "manual") {
-    showPopup("You have successfully logged out.", "success");
-}
-
-// Remove query param immediately after showing the popup
-if (loggedOutType) {
-    const cleanUrl = window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
-}
-
-// Show login error messages if any
-const errorMessageElement = document.getElementById("error-message");
-const errorMessageText = errorMessageElement.textContent.trim();
-if (errorMessageText && errorMessageText !== "{{message}}") {
-    showPopup(errorMessageText, "error");
-    errorMessageElement.style.display = "none";
-}
-
-
-document.getElementById("togglePassword").addEventListener("click", function () {
-    const pass = document.getElementById("password");
-
-    if (pass.type === "password") {
+    /* -------- Password toggle -------- */
+    document.getElementById("togglePassword").addEventListener("click", function () {
+      const pass = document.getElementById("password");
+      if (pass.type === "password") {
         pass.type = "text";
         this.textContent = "Hide";
-    } else {
+      } else {
         pass.type = "password";
         this.textContent = "Show";
+      }
+    });
+
+    /* -------- Show login error -------- */
+    const errMsg = document.getElementById("error-message").textContent.trim();
+    if (errMsg && errMsg !== "{{message}}") {
+      showPopup(errMsg, "error");
+      document.getElementById("error-message").style.display = "none";
     }
-});
-</script>
 
+    /* -------- SYSTEM CHECK BOX -------- */
+    async function loadSystemStatus() {
+      try {
+        const res = await fetch("/current-user");
+        const data = await res.json();
 
+        const text = document.getElementById("activeUserText");
+        const btn = document.getElementById("requestLogoutBtn");
 
+        if (!data.activeUser) {
+          text.innerHTML = "✔ No one is currently using the system.";
+          btn.style.display = "none";
+        } else {
+          text.innerHTML = `🔒 Currently in use by <strong>${data.activeUser}</strong>`;
+          btn.style.display = "inline-block";
 
+          btn.onclick = async () => {
+            await fetch("/request-logout", { method: "POST" });
+            showPopup("Logout request sent.", "success");
+            loadSystemStatus(); // refresh UI
+          };
+        }
 
+      } catch (err) {
+        console.error(err);
+        document.getElementById("activeUserText").innerText = "Unable to fetch system status.";
+      }
+    }
 
+    loadSystemStatus();
+
+  </script>
+
+</body>
 </html>
