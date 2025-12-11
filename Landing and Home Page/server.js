@@ -297,6 +297,51 @@ app.post("/delete-user", async (req, res) => {
     return res.json({ success: true });
 });
 
+
+// add patient
+app.post("/create-patient", async (req, res) => {
+    const currentUser = req.cookies.user4000;
+    await db.read();
+    const userObj = db.data.users.find(u => u.username === currentUser);
+    if (!userObj || userObj.role !== "Administrator") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    const { name, contactNumber, medicalHistory } = req.body;
+    if (!name || !contactNumber || !medicalHistory) {
+        return res.status(400).json({ success: false, message: "Missing fields" });
+    }
+
+    await db.read();
+    db.data.patients.push({ id: Date.now(), name, contactNumber, medicalHistory });
+    await db.write();
+
+    res.json({ success: true });
+});
+
+// get patients
+app.get("/patients", async (req, res) => {
+    const currentUser = req.cookies.user4000;
+    await db.read();
+    const userObj = db.data.users.find(u => u.username === currentUser);
+    if (!userObj || userObj.role !== "Administrator") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    res.json({ success: true, patients: db.data.patients });
+});
+
+// delete patient
+app.delete("/patients/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    await db.read();
+    const index = db.data.patients.findIndex(p => p.id === id);
+    if (index === -1) return res.json({ success: false, message: "Patient not found" });
+    db.data.patients.splice(index, 1);
+    await db.write();
+    res.json({ success: true });
+});
+
 // -------------------------------------------------
 // Start server
 // -------------------------------------------------

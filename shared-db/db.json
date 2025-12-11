@@ -21,6 +21,26 @@
       "role": "User"
     }
   ],
-  "activeUser": null,
-  "lastActivity": null
+  "patients": [
+    {
+      "id": 1764677354102,
+      "name": "Patient1",
+      "contactNumber": "87654321",
+      "medicalHistory": "NIL"
+    },
+    {
+      "id": 1764677359385,
+      "name": "Patient2",
+      "contactNumber": "98765432",
+      "medicalHistory": "NIL"
+    },
+    {
+      "id": 1765463384421,
+      "name": "Patient 3",
+      "contactNumber": "81235175",
+      "medicalHistory": "NIL"
+    }
+  ],
+  "activeUser": "Admin",
+  "lastActivity": 1765464033776
 }

@@ -1,205 +1,351 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Home - KKH</title>
+  <title>Home - KK Hospital</title>
   <link rel="stylesheet" href="/index.css">
+
   <style>
-    .modal { 
-      display: none; 
-      position: fixed; 
-      inset: 0; 
-      align-items: center; 
-      justify-content: center; 
-      background: rgba(0,0,0,0.4); 
-    }
-    .modal .modal-content { 
-      background: #fff; 
-      padding: 20px; 
-      border-radius: 8px; 
-      width: 320px; 
-    }
-    .action-btn { margin: 6px; }
+    
+    
   </style>
 </head>
+
 <body>
 
-<header class="topbar">
-  <div class="container">
-    <h2>KK Hospital</h2>
-    <div class="account-info">
-      <span id="username-display">Logged in as: <span id="user"></span></span>
-      <a href="/logout" class="logout-btn" id="logout-btn">Logout</a>
-    </div>
-  </div>
-</header>
-
-<main class="main-content">
-  <div class="tab-bar">
-    <button class="tab-btn active" data-tab="schedule">Work Schedule</button>
-    <button class="tab-btn" data-tab="create-user">Create Users</button>
-    <button class="tab-btn" data-tab="view-users">View Users</button>
-  </div>
-
-  <!-- Schedule Tab -->
-  <div id="tab-schedule" class="tab-section">
-      <h1>Work Schedule</h1>
-      <table class="schedule-table">
-          <thead>
-              <tr>
-                  <th>Ward</th>
-                  <th>Nurse In-Charge</th>
-                  <th>Patients Assigned</th>
-                  <th>Workload Quota</th>
-              </tr>
-          </thead>
-          <tbody>
-              <tr>
-                  <td>Ward 3A</td>
-                  <td>Nur Aisyah</td>
-                  <td>
-                      • Patient 001 Sarah Lim<br>
-                      • Patient 014 Megan Tan
-                  </td>
-                  <td>2 / 5</td>
-              </tr>
-              <tr>
-                  <td>Ward 4B</td>
-                  <td>John Lee</td>
-                  <td>
-                      • Patient 007 Ahmad Rahim<br>
-                      • Patient 021 Chloe Ng<br>
-                      • Patient 030 Lucas Wong
-                  </td>
-                  <td>3 / 5</td>
-              </tr>
-              <tr>
-                  <td>Ward 2C</td>
-                  <td>Lim Jia Wen</td>
-                  <td>
-                      • Patient 012 Tan Wei<br>
-                      • Patient 088 Siti Nur<br>
-                  </td>
-                  <td>2 / 5</td>
-              </tr>
-          </tbody>
-      </table>
-  </div>
-
-  <!-- Create User Tab -->
-  <div id="tab-create-user" class="tab-section" style="display:none;">
-    <h1>Create User</h1>
-    <form class="create-user-form">
-      <div class="input-group"><label>Username</label><input id="new-username" required></div>
-      <div class="input-group"><label>Password</label><input id="new-password" type="password" required></div>
-      <div class="input-group">
-        <label>Role</label>
-        <select id="user-role" required>
-          <option value="" disabled selected>Select role</option>
-          <option>Administrator</option>
-          <option>User</option>
-        </select>
+  <!-- =============================
+       HEADER
+  ============================== -->
+  <header class="topbar">
+    <div class="container">
+      <h2>KK Hospital File Sharing System</h2>
+      <div class="account-info">
+        <span id="username-display">Logged in as: <span id="user"></span></span>
+        <a href="/logout" class="logout-btn" id="logout-btn">Logout</a>
       </div>
-      <button type="submit" class="action-btn">Create User</button>
-    </form>
-  </div>
+    </div>
+  </header>
 
-  <!-- View Users Tab -->
-  <div id="tab-view-users" class="tab-section" style="display:none;">
-    <h1>All Users</h1>
-    <table class="users-table">
-      <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
-      <tbody id="users-list"></tbody>
-    </table>
-  </div>
+  <!-- =============================
+       MAIN CONTENT
+  ============================== -->
+  <main class="main-content">
 
-  <!-- Update Modal -->
-  <div id="update-user-modal" class="modal" aria-hidden="true">
-    <div class="modal-content">
-      <h3>Update User</h3>
+    <!-- ===== TAB BAR ===== -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="schedule">Work Schedule</button>
+      <div class="dropdown-tab">
+        <button class="tab-btn">Files ▾</button>
 
-      <form id="update-user-form">
+        <div class="dropdown-menu">
+          <button class="sub-tab-btn" data-tab="shared-files">Shared Files</button>
+          <button class="sub-tab-btn" data-tab="upload-file">Upload File</button>
+        </div>
+      </div>
+
+      <button class="tab-btn" data-tab="add-patient">Patients</button>
+      <div class="dropdown-tab">
+        <button class="tab-btn">Users ▾</button>
+
+        <div class="dropdown-menu">
+          <button class="sub-tab-btn" data-tab="create-user">Create User</button>
+          <button class="sub-tab-btn" data-tab="view-users">View Users</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =============================
+         WORK SCHEDULE TAB
+    ============================== -->
+    <div id="tab-schedule" class="tab-section" style="display:block;">
+      <h1> Work Schedule</h1>
+
+      <div class="schedule-grid">
+        
+        <div class="schedule-card">
+          <h3>Ward 3A</h3>
+          <p class="nurse">👩‍⚕️ Nurse In-Charge: <strong>Nur Aisyah</strong></p>
+          <div class="patients">
+            <p>• Patient 001 — Sarah Lim</p>
+            <p>• Patient 014 — Megan Tan</p>
+          </div>
+          <div class="quota">
+            <span>Workload: <strong>2 / 5</strong></span>
+          </div>
+        </div>
+
+        <div class="schedule-card">
+          <h3>Ward 4B</h3>
+          <p class="nurse">👨‍⚕️ Nurse In-Charge: <strong>John Lee</strong></p>
+          <div class="patients">
+            <p>• Patient 007 — Ahmad Rahim</p>
+            <p>• Patient 021 — Chloe Ng</p>
+            <p>• Patient 030 — Lucas Wong</p>
+          </div>
+          <div class="quota">
+            <span>Workload: <strong>3 / 5</strong></span>
+          </div>
+        </div>
+
+        <div class="schedule-card">
+          <h3>Ward 2C</h3>
+          <p class="nurse">👩‍⚕️ Nurse In-Charge: <strong>Lim Jia Wen</strong></p>
+          <div class="patients">
+            <p>• Patient 012 — Tan Wei</p>
+            <p>• Patient 088 — Siti Nur</p>
+          </div>
+          <div class="quota">
+            <span>Workload: <strong>2 / 5</strong></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =============================
+         CREATE USER TAB
+    ============================== -->
+    <div id="tab-create-user" class="tab-section" style="display:none;">
+      <h1>Create User</h1>
+
+      <form class="create-user-form">
         <div class="input-group">
-          <label for="update-username">Username</label>
-          <input type="text" id="update-username" readonly>
+          <label>Username</label>
+          <input id="new-username" required>
         </div>
 
         <div class="input-group">
-          <label for="update-role">Role</label>
-          <select id="update-role">
+          <label>Password</label>
+          <input id="new-password" type="password" required>
+        </div>
+
+        <div class="input-group">
+          <label>Role</label>
+          <select id="user-role" required>
+            <option value="" disabled selected>Select role</option>
             <option>Administrator</option>
             <option>User</option>
           </select>
         </div>
 
-        <div class="modal-buttons">
-          <button type="submit" class="btn-save">Save</button>
-          <button type="button" id="cancel-update" class="btn-cancel">Cancel</button>
-        </div>
+        <button type="submit" class="action-btn">Create User</button>
       </form>
     </div>
-  </div>
 
-</main>
+    <!-- =============================
+         VIEW USERS TAB
+    ============================== -->
+    <div id="tab-view-users" class="tab-section" style="display:none;">
+        <h1>All Users</h1>
+        <input type="text" id="user-search" placeholder="Search users..." class="search-input">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="users-list"></tbody>
+        </table>
+    </div>
 
-<script>
-  // -------------------------
-  // Popup helper
-  // -------------------------
-  function showPopup(msg, type = "info") {
-    const d = document.createElement("div");
-    d.textContent = msg;
-    d.className = `popup ${type}`;
-    document.body.appendChild(d);
-    setTimeout(() => d.remove(), 2500);
-  }
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-  }
+    <!-- Patient Record -->
+    <div id="tab-add-patient" class="tab-section" style="display: none;">
+        <h1>Patient Records</h1>
+        <form class="create-patient-form">
+            <input type="text" id="patient-name" placeholder="Name" required>
+            <input type="text" id="patient-contact" placeholder="Contact Number" required>
+            <input type="text" id="patient-history" placeholder="Medical History" required>
+            <button id="addPatientBtn" class="action-btn">Add Patient</button>
+        </form>
 
-  document.getElementById('user').innerText = getCookie('user3030') || 'Unknown';
+        <table class="patients-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact Number</th>
+                    <th>Medical History</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patients-list">
+                <!-- patients list -->
+            </tbody>
+        </table>
+    </div>
 
-  // -------------------------
-  // Tab Switching
-  // -------------------------
-  const tabButtons = document.querySelectorAll(".tab-btn");
-  const tabSections = document.querySelectorAll(".tab-section");
+    <!-- =============================
+         UPDATE USER MODAL
+    ============================== -->
+    <div id="update-user-modal" class="modal" aria-hidden="true">
+      <div class="modal-content">
+        <h3>Update User</h3>
 
-  tabButtons.forEach(btn => btn.addEventListener("click", () => {
-    const target = btn.dataset.tab;
+        <form id="update-user-form">
+          <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="update-username" readonly>
+          </div>
 
-    tabButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+          <div class="input-group">
+            <label>Role</label>
+            <select id="update-role">
+              <option>Administrator</option>
+              <option>User</option>
+            </select>
+          </div>
 
-    tabSections.forEach(s => {
-      s.style.display = s.id === `tab-${target}` ? "block" : "none";
-    });
+          <div class="modal-buttons">
+            <button type="submit" class="btn-save">Save</button>
+            <button type="button" id="cancel-update" class="btn-cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
-    if (target === "view-users") loadUsers();
-  }));
+    <!-- =============================
+         UPLOAD FILE TAB (FIXED)
+    ============================== -->
+    <div id="tab-upload-file" class="tab-section" style="display:none;">
+      <h1>Upload File</h1>
 
-  // -------------------------
-  // Create User
-  // -------------------------
-  document.querySelector(".create-user-form").addEventListener("submit", async e => {
-    e.preventDefault();
-    const username = document.getElementById("new-username").value.trim();
-    const password = document.getElementById("new-password").value;
-    const role = document.getElementById("user-role").value;
+      <div class="recent-files-widget">
+        <h2>Recent Files</h2>
+        <ul id="recent-files-list"></ul>
+      </div>
 
-    if (!username || !password || !role) {
-      showPopup("Please fill in all fields.", "error");
-      return;
+      <!-- NEW UPLOAD FORM BOX -->
+      <div class="upload-box">
+        <form id="upload-file-form" enctype="multipart/form-data">
+
+          <div class="input-group">
+            <label>File Title</label>
+            <input id="file-title" required>
+          </div>
+
+          <div class="input-group">
+            <label>Description</label>
+            <textarea id="file-desc" rows="2"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>Choose File</label>
+            <input type="file" id="file-input" required>
+          </div>
+
+          <div id="file-preview" style="margin-top:10px;"></div>
+
+          <button type="submit" class="action-btn" style="margin-top:15px;">Upload</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- =============================
+         SHARED FILES TAB
+    ============================== -->
+    <div id="tab-shared-files" class="tab-section" style="display:none;">
+      <h1>Shared Files</h1>
+
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Uploaded By</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="shared-files-list"></tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- =============================
+       JAVASCRIPT
+  ============================== -->
+  <script>
+    function showPopup(msg, type = "info") {
+      const d = document.createElement("div");
+      d.textContent = msg;
+      d.className = `popup ${type}`;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 2500);
     }
 
-    try {
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    document.getElementById("user").innerText =
+      getCookie("user4000") || "Unknown";
+
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabSections = document.querySelectorAll(".tab-section");
+
+    tabButtons.forEach(btn =>
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        tabSections.forEach(s => {
+          s.style.display = s.id === `tab-${target}` ? "block" : "none";
+        });
+
+        if (target === "view-users") loadUsers();
+        if (target === "shared-files") loadSharedFiles();
+        if (target === "upload-file") loadRecentFiles();
+      })
+    );
+
+    // display error message when patient tab is clicked
+      const patientsTabBtn = document.querySelector(".tab-btn[data-tab='add-patient']");
+      if (patientsTabBtn) {
+          patientsTabBtn.addEventListener("click", async () => {
+              try {
+                  const res = await fetch("/status");
+                  const data = await res.json();
+                  const role = data.role;
+
+                  if (role !== "Administrator") {
+                      document.querySelector(".create-patient-form").style.display = "none";
+                      const tbody = document.getElementById("patients-list");
+                      if (tbody) tbody.innerHTML = "";
+
+                      showPopup("Unauthorized. Only admins can access patient records", "error");
+                  } else {
+                      document.querySelector(".create-patient-form").style.display = "block";
+                      loadPatients();
+                  }
+              } catch (err) {
+                  console.error("Error checking patient access:", err);
+              }
+          });
+      }
+
+    /* CREATE USER */
+    document.querySelector(".create-user-form").addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const username = document.getElementById("new-username").value.trim();
+      const password = document.getElementById("new-password").value;
+      const role = document.getElementById("user-role").value;
+
+      if (!username || !password || !role)
+        return showPopup("Please fill all fields.", "error");
+
       const res = await fetch("/create-user", {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password, role })
       });
 
@@ -207,26 +353,14 @@
       if (data.success) {
         showPopup("User created!", "success");
         e.target.reset();
-      } else {
-        showPopup("Error: " + data.message, "error");
-      }
-    } catch (err) {
-      showPopup("Server error: " + err.message, "error");
-    }
-  });
+      } else showPopup("Error: " + data.message, "error");
+    });
 
-  // -------------------------
-  // Load Users
-  // -------------------------
-  async function loadUsers() {
-    try {
+    /* LOAD USERS */
+    async function loadUsers() {
       const res = await fetch("/users");
       const data = await res.json();
-
-      if (!data.success) {
-        showPopup("Unauthorized or failed to load users", "error");
-        return;
-      }
+      if (!data.success) return;
 
       const tbody = document.getElementById("users-list");
       tbody.innerHTML = "";
@@ -234,149 +368,284 @@
       data.users.forEach(u => {
         const tr = document.createElement("tr");
 
-        const tdName = document.createElement("td");
-        tdName.innerText = u.username;
+        tr.innerHTML = `
+          <td>${u.username}</td>
+          <td>${u.role}</td>
+          <td>
+            <button class="btn-update" data-username="${u.username}" data-role="${u.role}" onclick="showUpdatePopup(event)">Update</button>
+            <button class="btn-remove" data-username="${u.username}" onclick="deleteUser(event)">Delete</button>
+          </td>
+        `;
 
-        const tdRole = document.createElement("td");
-        tdRole.innerText = u.role;
-
-        const tdActions = document.createElement("td");
-
-        const btnUpdate = document.createElement("button");
-        btnUpdate.className = "btn-update";
-        btnUpdate.innerText = "Update";
-        btnUpdate.dataset.username = u.username;
-        btnUpdate.dataset.role = u.role;
-        btnUpdate.addEventListener("click", showUpdatePopup);
-
-        const btnDelete = document.createElement("button");
-        btnDelete.className = "btn-remove";
-        btnDelete.innerText = "Delete";
-        btnDelete.dataset.username = u.username;
-        btnDelete.addEventListener("click", deleteUser);
-
-        tdActions.append(btnUpdate, " ", btnDelete);
-
-        tr.append(tdName, tdRole, tdActions);
         tbody.appendChild(tr);
       });
-    } catch (err) {
-      showPopup("Error loading users: " + err.message, "error");
+
+      // search bar
+        const userSearch = document.getElementById("user-search");
+        userSearch.addEventListener("input", () => {
+            const filter = userSearch.value.toLowerCase();
+            const rows = document.querySelectorAll("#users-list tr");
+            rows.forEach(row => {
+                const username = row.cells[0].textContent.toLowerCase();
+                const role = row.cells[1].textContent.toLowerCase();
+                if (username.includes(filter) || role.includes(filter)) { row.style.display = ""; }
+                else { row.style.display = "none"; }
+            });
+        });
     }
-  }
 
-  // -------------------------
-  // Delete User
-  // -------------------------
-  async function deleteUser(e) {
-    const username = e.currentTarget.dataset.username;
-    if (!confirm(`Delete ${username}?`)) return;
+    async function deleteUser(e) {
+      const username = e.currentTarget.dataset.username;
+      if (!confirm(`Delete ${username}?`)) return;
 
-    try {
       const res = await fetch("/delete-user", {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username })
       });
 
       const data = await res.json();
-
       if (data.success) {
-        showPopup("Deleted", "success");
+        showPopup("User deleted!", "success");
         loadUsers();
-      } else {
-        showPopup("Error: " + data.message, "error");
-      }
-
-    } catch (err) {
-      showPopup("Server error: " + err.message, "error");
+      } else showPopup("Error: " + data.message, "error");
     }
-  }
 
-  // -------------------------
-  // Update Modal Logic
-  // -------------------------
-  const updateModal = document.getElementById("update-user-modal");
-  const updateForm = document.getElementById("update-user-form");
-  const cancelUpdateBtn = document.getElementById("cancel-update");
 
-  function showUpdatePopup(e) {
-    const btn = e.currentTarget;
-    const username = btn.dataset.username;
-    const role = btn.dataset.role;
+    // create Patient
+    const createPatientForm = document.querySelector(".create-patient-form");
+    createPatientForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const name = document.getElementById("patient-name").value.trim();
+        const medicalHistory = document.getElementById("patient-history").value.trim();
+        const contactNumber = document.getElementById("patient-contact").value.trim();
+        // contact validation
+        const contactRegex = /^[689][0-9]{7}$/;
+        if (!contactRegex.test(contactNumber)) { showPopup("Contact number must be at least 8 digits and start with 6,8 or 9.", "error"); return; }
+        if (!name || !contactNumber || !medicalHistory) { showPopup("Please fill in all fields.", "error"); return; }
+        try {
+            const res = await fetch("/create-patient", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, contactNumber, medicalHistory }) });
+            const data = await res.json();
+            if (data.success) { showPopup("Patient added successfully!", "success"); createPatientForm.reset(); loadPatients(); }
+            else { showPopup("Error: " + data.message, "error"); }
+        } catch (err) { showPopup("Server error: " + err.message, "error"); }
+    });
+    // load patients
+    async function loadPatients() {
+        try {
+            const res = await fetch("/patients");
+            const data = await res.json();
+            if (!data.success) return;
+            const tbody = document.getElementById("patients-list");
+            tbody.innerHTML = "";
+            data.patients.forEach(p => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${p.name}</td>
+                    <td>${p.contactNumber}</td>
+                    <td>${p.medicalHistory}</td>
+                    <td>
+                        <button class="btn-remove-patient" data-id="${p.id}">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-    updateForm.dataset.originalUsername = username;
+            // delete patient
+            document.querySelectorAll(".btn-remove-patient").forEach(btn => {
+                btn.addEventListener("click", async e => {
+                    const id = Number(e.target.dataset.id);
+                    if (!confirm(`Delete patient?`)) return;
+                    try {
+                        const res = await fetch(`/patients/${id}`, { method: "DELETE" });
+                        const result = await res.json();
+                        if (result.success) { showPopup("Patient deleted successfully!", "success"); loadPatients(); }
+                        else { showPopup("Error: " + result.message, "error"); }
+                    } catch (err) { showPopup("Server error: " + err.message, "error"); }
+                });
+            });
+        } catch (err) { showPopup("Error loading patients: " + err.message, "error"); }
+    }
+    loadPatients();
 
-    document.getElementById("update-username").value = username;
-    document.getElementById("update-role").value = role;
+    const updateModal = document.getElementById("update-user-modal");
+    const updateForm = document.getElementById("update-user-form");
 
-    updateModal.style.display = "flex";
-  }
+    function showUpdatePopup(e) {
+      const btn = e.currentTarget;
+      document.getElementById("update-username").value = btn.dataset.username;
+      document.getElementById("update-role").value = btn.dataset.role;
+      updateForm.dataset.originalUsername = btn.dataset.username;
+      updateModal.style.display = "flex";
+    }
 
-  cancelUpdateBtn.addEventListener("click", () => {
-    updateModal.style.display = "none";
-  });
+    document.getElementById("cancel-update").addEventListener("click", () =>
+      updateModal.style.display = "none"
+    );
 
-  updateForm.addEventListener("submit", async e => {
-    e.preventDefault();
-    const originalUsername = updateForm.dataset.originalUsername;
-    const role = document.getElementById("update-role").value;
+    updateForm.addEventListener("submit", async e => {
+      e.preventDefault();
 
-    try {
+      const username = updateForm.dataset.originalUsername;
+      const role = document.getElementById("update-role").value;
+
       const res = await fetch("/update-user", {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ username: originalUsername, role })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, role })
       });
 
       const data = await res.json();
-
       if (data.success) {
         showPopup("User updated!", "success");
         updateModal.style.display = "none";
         loadUsers();
+      } else showPopup("Error updating", "error");
+    });
+
+    /* FILE PREVIEW */
+    document.getElementById("file-input").addEventListener("change", function () {
+      const file = this.files[0];
+      const preview = document.getElementById("file-preview");
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+
+      if (file.type === "application/pdf") {
+        preview.innerHTML = `<embed src="${url}" width="100%" height="300px" />`;
+      } else if (file.type.startsWith("image/")) {
+        preview.innerHTML = `<img src="${url}" style="max-width:200px;border-radius:6px;">`;
       } else {
-        showPopup("Error: " + data.message, "error");
+        preview.innerHTML = `<p>No preview available.</p>`;
       }
+    });
 
-    } catch (err) {
-      showPopup("Server error: " + err.message, "error");
+    /* UPLOAD FILE */
+    document.getElementById("upload-file-form").addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const title = document.getElementById("file-title").value.trim();
+      const desc = document.getElementById("file-desc").value;
+      const file = document.getElementById("file-input").files[0];
+
+      if (!title || !file) return showPopup("Please fill all fields.", "error");
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("desc", desc);
+      formData.append("file", file);
+
+      const res = await fetch("/upload-file", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        showPopup("File uploaded!", "success");
+        e.target.reset();
+        document.getElementById("file-preview").innerHTML = "";
+        loadRecentFiles();
+        loadSharedFiles();
+      } else showPopup("Upload failed: " + data.message, "error");
+    });
+
+    /* RECENT FILES */
+    async function loadRecentFiles() {
+      const res = await fetch("/recent-files");
+      const data = await res.json();
+
+      const list = document.getElementById("recent-files-list");
+      list.innerHTML = "";
+
+      data.files.forEach(f => {
+        const li = document.createElement("li");
+        li.textContent = `${f.title} — ${new Date(f.date).toLocaleString()}`;
+        list.appendChild(li);
+      });
     }
-  });
 
-  // ------------------------------
-  // ROLE-BASED PERMISSION CONTROL
-  // ------------------------------
-  async function applyRolePermissions() {
-    try {
+    /* SHARED FILES */
+    async function loadSharedFiles() {
+      const res = await fetch("/files");
+      const data = await res.json();
+
+      const tbody = document.getElementById("shared-files-list");
+      tbody.innerHTML = "";
+
+      data.files.forEach(f => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${f.title}</td>
+          <td>${f.uploader}</td>
+          <td>${new Date(f.date).toLocaleString()}</td>
+          <td>
+            <a href="/download-file/${f._id}" class="btn-update">Download</a>
+            <button class="btn-remove" onclick="deleteFile('${f._id}')">Delete</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deleteFile(id) {
+      if (!confirm("Delete this file?")) return;
+
+      const res = await fetch("/delete-file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showPopup("File deleted!", "success");
+        loadSharedFiles();
+        loadRecentFiles();
+      } else showPopup("Error deleting file", "error");
+    }
+
+    
+    async function applyRolePermissions() {
       const res = await fetch("/status");
       const data = await res.json();
-      const role = data.role;
 
-      const btnCreate = document.querySelector('[data-tab="create-user"]');
-      const btnView = document.querySelector('[data-tab="view-users"]');
-
-      const sectionCreate = document.getElementById("tab-create-user");
-      const sectionView = document.getElementById("tab-view-users");
-
-      if (role !== "Administrator") {
-        btnCreate.style.display = "none";
-        btnView.style.display = "none";
-
-        sectionCreate.style.display = "none";
-        sectionView.style.display = "none";
-
-        // Force schedule tab as active
-        document.querySelector('[data-tab="schedule"]').click();
+      if (data.role !== "Administrator") {
+        document.querySelector('[data-tab="create-user"]').style.display = "none";
+        document.querySelector('[data-tab="view-users"]').style.display = "none";
       }
-    } catch (err) {
-      console.error("Role permission failed:", err);
     }
-  }
+    applyRolePermissions();
 
-  // Run after DOM loads
-  applyRolePermissions();
 
-</script>
+  document.querySelectorAll(".sub-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+
+        // Remove active from BOTH main tabs and sub-tabs
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".sub-tab-btn").forEach(b => b.classList.remove("active"));
+
+        // Highlight selected sub-tab
+        btn.classList.add("active");
+
+        // Hide all tab sections
+        document.querySelectorAll(".tab-section").forEach(s => s.style.display = "none");
+
+        // Show correct section
+        document.getElementById(`tab-${target}`).style.display = "block";
+
+        // Load data
+        if (target === "view-users") loadUsers();
+        if (target === "create-user") {} // no loading needed
+        if (target === "shared-files") loadSharedFiles();
+        if (target === "upload-file") loadRecentFiles();
+    });
+});
+
+
+
+    
+  </script>
 </body>
+
 </html>

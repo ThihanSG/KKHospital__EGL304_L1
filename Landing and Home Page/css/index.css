@@ -21,7 +21,7 @@ body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: rgba(255, 255, 255, 0.9); /* adjust opacity here */
+    background: rgba(255, 255, 255, 0.6); /* adjust opacity here */
     z-index: -1; /* stays behind content */
 }
 
@@ -41,8 +41,26 @@ body::before {
 .account-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 18px;
+    background: rgba(255, 255, 255, 0.22);
+    padding: 6px 14px;
+    border-radius: 25px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.3);
 }
+
+#username-display {
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+}
+
+#username-display #user {
+    font-weight: 700;
+}
+
+
 
 .logout-btn {
     color: white;
@@ -260,70 +278,39 @@ button.action-btn:hover {
 }
 
 
-/* TAB BAR
+
 .tab-bar {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px 0;
+  margin-bottom: 20px;
 }
 
 .tab-btn {
-    padding: 10px 20px;
-    background: #659ad5;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.tab-btn.active {
-    background: #4a7abf;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  padding: 8px 18px;              /* smaller + cleaner */
+  background: #f1f5ff;            /* softer pastel */
+  border: none;
+  border-radius: 18px;            /* slimmer pill */
+  font-size: 15px;
+  font-weight: 600;
+  color: #3a4a5a;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
 .tab-btn:hover {
-    background: #4a7abf;
-} */
-
-.tab-bar {
-    display: flex;
-    justify-content: center;
-    gap: 12px; /* spacing between tabs */
-    margin-bottom: 30px;
-    flex-wrap: wrap; /* responsive for smaller screens */
+  background: #dbe7ff;
+  transform: translateY(-2px);
 }
 
-/* Tab Buttons */
-.tab-btn {
-    padding: 10px 22px;
-    background: #f0f2f5;       /* light gray background */
-    color: #333;               /* dark text */
-    border: none;
-    border-radius: 25px;       /* pill-shaped tabs */
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-}
-
-.tab-btn:hover {
-    background: #659ad5;       /* blue hover */
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-}
-
-/* Active Tab */
 .tab-btn.active {
-    background: #2575fc;       /* strong blue for active tab */
-    color: white;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    transform: translateY(-2px);
+  background: #659ad5 !important;
+  color: #ffffff !important; 
+  
+  transform: translateY(-1px);
 }
+
 
 /* Create User Form Modern Styling */
 .create-user-form {
@@ -595,3 +582,297 @@ button.action-btn:hover {
     background-color: #b52a36;
     transform: translateY(-2px);
 }
+
+
+.recent-files-widget {
+  background: #eef6ff;
+  border-left: 5px solid #4b8fea;
+  padding: 15px;
+  margin: 10px 0 20px;
+  border-radius: 6px;
+}
+
+.recent-files-widget ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 8px;
+}
+
+.recent-files-widget li {
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+/* Modern schedule grid */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 20px;
+}
+
+/* Modern card layout */
+.schedule-card {
+  background: #ffffffdd;
+  backdrop-filter: blur(3px);
+  padding: 20px 22px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  text-align: left;
+}
+
+.schedule-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* Card headings */
+.schedule-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2575fc;
+  margin-bottom: 10px;
+}
+
+/* Nurse name styling */
+.schedule-card .nurse {
+  font-size: 14px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+/* Patients list */
+.schedule-card .patients {
+  background: #f1f7ff;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.schedule-card .patients p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+/* Workload box */
+.schedule-card .quota {
+  font-size: 15px;
+  font-weight: 600;
+  color: #444;
+  background: #e8efff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+
+/* =============================
+       RECENT FILES WIDGET
+    ============================== */
+    .recent-files-widget {
+      background: #eef6ff;
+      border-left: 5px solid #4b8fea;
+      padding: 15px;
+      margin: 20px auto;
+      border-radius: 6px;
+      max-width: 700px;
+      text-align: left;
+    }
+
+    .recent-files-widget ul {
+      margin-top: 8px;
+      padding-left: 15px;
+    }
+
+    .recent-files-widget li {
+      padding: 4px 0;
+      font-size: 14px;
+    }
+
+    /* =============================
+       UPLOAD FILE CONTAINER (NEW)
+    ============================== */
+    .upload-box {
+      background: #ffffffdd;
+      padding: 30px 25px;
+      max-width: 420px;
+      margin: 0 auto;
+      border-radius: 15px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      text-align: left;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .upload-box label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .upload-box input,
+    .upload-box textarea {
+      width: 100%;
+    }
+
+
+.search-input {
+    width: 80%;
+    max-width: 450px;
+    margin: 0 0 15px 0;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #2575fc;
+    box-shadow: 0 0 6px rgba(37, 117, 252, 0.25);
+}
+
+
+/* patient table */
+.create-patient-form {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 10px auto 20px auto;
+    max-width: 800px;
+    flex-wrap: wrap;
+}
+
+.create-patient-form input {
+    padding: 8px 10px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: 0.3s;
+    flex: 1 1 150px;
+}
+
+.create-patient-form input:focus {
+    outline: none;
+    border-color: #2575fc;
+    box-shadow: 0 0 6px rgba(37, 117, 252, 0.25);
+}
+
+.create-patient-form button.action-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    background-color: #659ad5;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.create-patient-form button.action-btn:hover {
+    background-color: #1a5ed1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* === FORCE FRIEND-STYLE PATIENT TABLE === */
+.patients-table {
+    width: 80% !important;
+    max-width: 800px !important;
+    margin: 0 auto 40px auto !important;
+    border-collapse: collapse !important;
+    background-color: #ffffff !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important;
+}
+
+.patients-table th {
+    background-color: #f9d9e8 !important;
+    color: #000 !important;
+    padding: 12px 15px !important;
+    font-weight: 600 !important;
+}
+
+.patients-table td {
+    padding: 12px 15px !important;
+}
+
+.patients-table tr:nth-child(even) {
+    background-color: #f3f5f7 !important;
+}
+
+/* Modern delete button */
+.btn-remove-patient,
+.btn-remove {
+    background: #ff4d4d !important;
+    border: none;
+    padding: 8px 14px;
+    color: white;
+    font-size: 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    box-shadow: 0 3px 8px rgba(255, 77, 77, 0.25);
+}
+
+.btn-remove-patient:hover,
+.btn-remove:hover {
+    background: #e04444 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(255, 77, 77, 0.35);
+}
+
+
+/* Dropdown container */
+.dropdown-tab {
+    position: relative;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 42px;
+    left: 0;
+    background: white;
+    padding: 8px 0;
+    border-radius: 10px;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.15);
+    z-index: 50;
+    min-width: 150px;
+}
+
+/* Show dropdown on hover */
+.dropdown-tab:hover .dropdown-menu {
+    display: block;
+}
+
+/* Buttons inside dropdown */
+.sub-tab-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sub-tab-btn:hover {
+    background: #eef4ff;
+    color: #2575fc;
+}
+
+/* Active style for sub-tab items */
+.sub-tab-btn.active {
+    background: #2575fc !important;
+    color: white !important;
+    font-weight: 600;
+}
+
