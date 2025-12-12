@@ -839,17 +839,18 @@ button.action-btn:hover {
     top: 42px;
     left: 0;
     background: white;
-    padding: 8px 0;
-    border-radius: 10px;
-    box-shadow: 0 5px 18px rgba(0,0,0,0.15);
-    z-index: 50;
-    min-width: 150px;
+    padding: 6px 0;
+    border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 160px;
 }
 
-/* Show dropdown on hover */
-.dropdown-tab:hover .dropdown-menu {
+/* JS-controlled open state */
+.dropdown-menu.show {
     display: block;
 }
+
 
 /* Buttons inside dropdown */
 .sub-tab-btn {
@@ -875,4 +876,5 @@ button.action-btn:hover {
     color: white !important;
     font-weight: 600;
 }
+
 

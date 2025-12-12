@@ -33,11 +33,9 @@ await db.write();
 // Max idle time (5 min)
 const maxIdleTime = 5 * 60 * 1000;
 
-// -------------------------------------------------
-// ⭐ FIXED checkAuth middleware for port 3030
-// -------------------------------------------------
+
 async function checkAuth(req, res, next) {
-    const username = req.cookies.user4000; // FIXED cookie name
+    const username = req.cookies.user4000; 
 
     if (!username) return res.redirect("/login.html");
 
@@ -85,9 +83,7 @@ app.get("/login.html", async (req, res) => {
     res.sendFile(join(__dirname, "pages/login.html"));
 });
 
-// -------------------------------------------------
-// LOGIN (fixed cookie name)
-// -------------------------------------------------
+// Login 
 app.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
@@ -138,9 +134,7 @@ app.get("/index.html", checkAuth, (req, res) => {
     res.sendFile(join(__dirname, "pages/index.html"));
 });
 
-// -------------------------------------------------
-// LOGOUT (fixed cookie name)
-// -------------------------------------------------
+//Logout 
 app.get("/logout", async (req, res) => {
     const username = req.cookies.user4000;
 
@@ -152,16 +146,15 @@ app.get("/logout", async (req, res) => {
         await db.write();
     }
 
-    res.clearCookie("user4000"); // FIXED
+    res.clearCookie("user4000"); 
     res.clearCookie("lastActivity");
 
     const type = req.query.type || "manual";
     return res.redirect(`/login.html?loggedOut=${type}`);
 });
 
-// -------------------------------------------------
-// Lecturer required endpoints
-// -------------------------------------------------
+
+
 app.get("/current-user", async (req, res) => {
     await db.read();
     res.json({
@@ -181,9 +174,8 @@ app.post("/request-logout", async (req, res) => {
     res.json({ success: true, message: "Active user has been logged off." });
 });
 
-// -------------------------------------------------
-// View status
-// -------------------------------------------------
+
+// To View Status
 app.get("/status", async (req, res) => {
     await db.read();
 
@@ -203,7 +195,7 @@ app.get("/status", async (req, res) => {
 });
 
 // -------------------------------------------------
-// Admin: Create User
+// Create User: For account with Admin Role
 // -------------------------------------------------
 app.post("/create-user", async (req, res) => {
     try {
@@ -238,7 +230,7 @@ app.post("/create-user", async (req, res) => {
 });
 
 // -------------------------------------------------
-// Admin: View all users
+// View All users : For account with Admin Role
 // -------------------------------------------------
 app.get("/users", async (req, res) => {
     const currentUser = req.cookies.user4000;
@@ -258,12 +250,12 @@ app.get("/users", async (req, res) => {
 });
 
 // -------------------------------------------------
-// Admin: Update user role
+// Update User Role : For account with Admin Role 
 // -------------------------------------------------
+// Update user role
 app.post("/update-user", async (req, res) => {
     await db.read();
-
-    const { username, role } = req.body;
+    const { username, role, password } = req.body;
 
     if (!username || !role) {
         return res.json({ success: false, message: "Missing fields" });
@@ -271,16 +263,26 @@ app.post("/update-user", async (req, res) => {
 
     const user = db.data.users.find(u => u.username === username);
 
-    if (!user) return res.json({ success: false, message: "User not found" });
+    if (!user) {
+        console.log("DEBUG: User not found →", username);
+        console.log("DEBUG: Existing users →", db.data.users);
+        return res.json({ success: false, message: "User not found" });
+    }
 
     user.role = role;
-    await db.write();
 
-    return res.json({ success: true });
+    if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword;
+    }
+
+    await db.write();
+    return res.json({ success: true, message: "User updated" });
 });
 
+
 // -------------------------------------------------
-// Admin: Delete user
+// Delete User : For account with Admin Role
 // -------------------------------------------------
 app.post("/delete-user", async (req, res) => {
     const { username } = req.body;

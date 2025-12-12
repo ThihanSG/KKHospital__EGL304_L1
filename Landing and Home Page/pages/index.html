@@ -193,6 +193,11 @@
           </div>
 
           <div class="input-group">
+            <label>New Password (leave blank to keep current)</label>
+            <input type="password" id="update-password" placeholder="Enter new password">
+          </div>
+
+          <div class="input-group">
             <label>Role</label>
             <select id="update-role">
               <option>Administrator</option>
@@ -332,29 +337,21 @@
           });
       }
 
-    /* CREATE USER */
-    document.querySelector(".create-user-form").addEventListener("submit", async e => {
-      e.preventDefault();
-
-      const username = document.getElementById("new-username").value.trim();
-      const password = document.getElementById("new-password").value;
-      const role = document.getElementById("user-role").value;
-
-      if (!username || !password || !role)
-        return showPopup("Please fill all fields.", "error");
-
-      const res = await fetch("/create-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, role })
+    // Create user
+      document.querySelector(".create-user-form").addEventListener("submit", async e => {
+          e.preventDefault();
+          const username = document.getElementById("new-username").value.trim();
+          const password = document.getElementById("new-password").value;
+          const role = document.getElementById("user-role").value;
+          if (!username || !password || !role) { showPopup("Please fill in all fields.", "error"); return; }
+          if (password.length < 8) { showPopup("Password must be at least 8 characters long.", "error"); return; }
+          try {
+              const res = await fetch("/create-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) });
+              const data = await res.json();
+              if (data.success) { showPopup("User created!", "success"); e.target.reset(); }
+              else showPopup("Error: " + data.message, "error");
+          } catch (err) { showPopup("Server error: " + err.message, "error"); }
       });
-
-      const data = await res.json();
-      if (data.success) {
-        showPopup("User created!", "success");
-        e.target.reset();
-      } else showPopup("Error: " + data.message, "error");
-    });
 
     /* LOAD USERS */
     async function loadUsers() {
@@ -484,24 +481,34 @@
     );
 
     updateForm.addEventListener("submit", async e => {
-      e.preventDefault();
+          e.preventDefault();
+          const originalUsername = (updateForm.dataset.originalUsername || '').toString().trim();
+          const role = document.getElementById("update-role").value;
+          const password = document.getElementById("update-password").value.trim();
 
-      const username = updateForm.dataset.originalUsername;
-      const role = document.getElementById("update-role").value;
+          if (!originalUsername || !role) { showPopup("Please fill in all fields.", "error"); return; }
+          if (password && password.length < 8) { showPopup("Password must be at least 8 characters long.", "error"); return; }
 
-      const res = await fetch("/update-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, role })
+          const newDetails = { username: originalUsername, role };
+          if (password) newDetails.password = password;   //include it if it is not empty
+
+          try {
+              const res = await fetch("/update-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newDetails) });
+              const data = await res.json();
+              if (data.success) {
+                  showPopup("User updated!", "success");
+                  updateModal.style.display = "none";
+                  loadUsers();
+              } else {
+                  // restore display to avoid showing undefined to user
+                  document.getElementById("update-username").value = originalUsername;
+                  showPopup("Error: " + data.message, "error");
+              }
+          } catch (err) {
+              document.getElementById("update-username").value = originalUsername;
+              showPopup("Server error: " + err.message, "error");
+          }
       });
-
-      const data = await res.json();
-      if (data.success) {
-        showPopup("User updated!", "success");
-        updateModal.style.display = "none";
-        loadUsers();
-      } else showPopup("Error updating", "error");
-    });
 
     /* FILE PREVIEW */
     document.getElementById("file-input").addEventListener("change", function () {
@@ -641,6 +648,35 @@
         if (target === "upload-file") loadRecentFiles();
     });
 });
+
+// Toggle dropdown on main tab click
+document.querySelectorAll(".dropdown-tab > .tab-btn").forEach(btn => {
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+
+    const dropdown = btn.nextElementSibling;
+
+    // Close other dropdowns
+    document.querySelectorAll(".dropdown-menu").forEach(menu => {
+      if (menu !== dropdown) menu.classList.remove("show");
+    });
+
+    dropdown.classList.toggle("show");
+  });
+});
+
+// Prevent dropdown clicks from closing itself
+document.querySelectorAll(".dropdown-menu").forEach(menu => {
+  menu.addEventListener("click", e => e.stopPropagation());
+});
+
+// Close dropdown when clicking outside
+document.addEventListener("click", () => {
+  document.querySelectorAll(".dropdown-menu").forEach(menu => {
+    menu.classList.remove("show");
+  });
+});
+
 
 
 
