@@ -23,23 +23,68 @@
     {
       "username": "Xanthe",
       "password": "$2b$10$GYVW5prmUWHiceXGuvhZT.kVQX57I7wX17J/avfX5CkT3SVYhB8Ii",
-      "role": "Administrator"
+      "role": "User"
     }
   ],
   "patients": [
     {
-      "id": 1764677354102,
-      "name": "Patient1",
+      "id": 1,
+      "name": "Sarah Lim",
       "contactNumber": "87654321",
-      "medicalHistory": "NIL"
+      "medicalHistory": "NIL",
+      "ward": "Ward 2C"
     },
     {
-      "id": 1764677359385,
-      "name": "Patient2",
-      "contactNumber": "98765432",
-      "medicalHistory": "NIL"
+      "id": 2,
+      "name": "Megan Tan",
+      "contactNumber": "87654321",
+      "medicalHistory": "Seafood allergy",
+      "ward": "Ward 2C"
+    },
+    {
+      "id": 3,
+      "name": "Ahmad Rahim",
+      "contactNumber": "90123456",
+      "medicalHistory": "NIL",
+      "ward": "Ward 3A"
+    },
+    {
+      "id": 4,
+      "name": "Chloe Ng",
+      "contactNumber": "81726354",
+      "medicalHistory": "Hypertension",
+      "ward": "Ward 3A"
+    },
+    {
+      "id": 5,
+      "name": "Lucas Wong",
+      "contactNumber": "96548765",
+      "medicalHistory": "NIL",
+      "ward": "Ward 3A"
+    },
+    {
+      "id": 6,
+      "name": "Tan Wei",
+      "contactNumber": "82734028",
+      "medicalHistory": "Diabetes",
+      "ward": "Ward 4B"
+    },
+    {
+      "id": 7,
+      "name": "Siti Nur",
+      "contactNumber": "82930000",
+      "medicalHistory": "NIL",
+      "ward": "Ward 4B"
     }
   ],
-  "activeUser": null,
-  "lastActivity": null
+  "activeUser": "Admin",
+  "lastActivity": 1765709178568,
+  "activityLog": [
+    {
+      "timestamp": 1765708164445,
+      "user": "Admin",
+      "action": "Updated user",
+      "details": "Username: Xanthe, New role: User"
+    }
+  ]
 }
