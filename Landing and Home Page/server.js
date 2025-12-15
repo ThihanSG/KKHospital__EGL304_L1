@@ -23,7 +23,7 @@ app.use(express.static(path.join(__dirname, "images")));
 // Initialize DB
 const file = join(__dirname, '../shared-db/db.json');
 const adapter = new JSONFile(file);
-const defaultData = { activeUser: null, users: [], lastActivity: null };
+const defaultData = { activeUser: null, users: [], lastActivity: null, activityLog: [] };
 
 const db = new Low(adapter, defaultData);
 await db.read();
@@ -35,7 +35,7 @@ const maxIdleTime = 5 * 60 * 1000;
 
 
 async function checkAuth(req, res, next) {
-    const username = req.cookies.user4000; 
+    const username = req.cookies.user4000;
 
     if (!username) return res.redirect("/login.html");
 
@@ -65,6 +65,19 @@ async function checkAuth(req, res, next) {
     }
 
     return res.redirect("/login.html");
+}
+
+// log activity
+async function logActivity(user, action, details = "") {
+    await db.read();
+    db.data.activityLog ||= [];
+    db.data.activityLog.push({
+        timestamp: Date.now(),
+        user,
+        action,
+        details
+    });
+    await db.write();
 }
 
 // -------------------------------------------------
@@ -146,7 +159,7 @@ app.get("/logout", async (req, res) => {
         await db.write();
     }
 
-    res.clearCookie("user4000"); 
+    res.clearCookie("user4000");
     res.clearCookie("lastActivity");
 
     const type = req.query.type || "manual";
@@ -220,6 +233,7 @@ app.post("/create-user", async (req, res) => {
         const hashed = await bcrypt.hash(password, 10);
         db.data.users.push({ username, password: hashed, role });
         await db.write();
+        await logActivity(currentUser, "Created user", `Username: ${username}, Role: ${role}`);
 
         return res.json({ success: true });
 
@@ -254,6 +268,7 @@ app.get("/users", async (req, res) => {
 // -------------------------------------------------
 // Update user role
 app.post("/update-user", async (req, res) => {
+    const currentUser = req.cookies.user4000;
     await db.read();
     const { username, role, password } = req.body;
 
@@ -277,6 +292,7 @@ app.post("/update-user", async (req, res) => {
     }
 
     await db.write();
+    await logActivity(currentUser, "Updated user", `Username: ${username}, New role: ${role}${password ? ", password changed" : ""}`);
     return res.json({ success: true, message: "User updated" });
 });
 
@@ -285,6 +301,7 @@ app.post("/update-user", async (req, res) => {
 // Delete User : For account with Admin Role
 // -------------------------------------------------
 app.post("/delete-user", async (req, res) => {
+    const currentUser = req.cookies.user4000;
     const { username } = req.body;
 
     await db.read();
@@ -295,6 +312,7 @@ app.post("/delete-user", async (req, res) => {
 
     db.data.users.splice(index, 1);
     await db.write();
+    await logActivity(currentUser, "Deleted user", `Username: ${username}`);
 
     return res.json({ success: true });
 });
@@ -309,16 +327,21 @@ app.post("/create-patient", async (req, res) => {
         return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    const { name, contactNumber, medicalHistory } = req.body;
-    if (!name || !contactNumber || !medicalHistory) {
+    const { name, contactNumber, medicalHistory, ward } = req.body;
+    if (!name || !contactNumber || !medicalHistory || !ward) {
         return res.status(400).json({ success: false, message: "Missing fields" });
     }
 
-    await db.read();
-    db.data.patients.push({ id: Date.now(), name, contactNumber, medicalHistory });
-    await db.write();
+    // generate patient id
+    const lastPatient = db.data.patients?.[db.data.patients.length - 1];
+    const newId = lastPatient ? lastPatient.id + 1 : 1;
 
-    res.json({ success: true });
+    await db.read();
+    db.data.patients.push({ id: newId, name, contactNumber, medicalHistory, ward });
+    await db.write();
+    await logActivity(currentUser, "Added patient", `Patient ID ${newId} - ${name}, Ward ${ward}`);
+
+    res.json({ success: true, patientId: newId });
 });
 
 // get patients
@@ -329,19 +352,60 @@ app.get("/patients", async (req, res) => {
     if (!userObj || userObj.role !== "Administrator") {
         return res.status(403).json({ success: false, message: "Unauthorized" });
     }
-
     res.json({ success: true, patients: db.data.patients });
 });
 
 // delete patient
 app.delete("/patients/:id", async (req, res) => {
+    const currentUser = req.cookies.user4000;
     const id = Number(req.params.id);
     await db.read();
     const index = db.data.patients.findIndex(p => p.id === id);
     if (index === -1) return res.json({ success: false, message: "Patient not found" });
     db.data.patients.splice(index, 1);
     await db.write();
+    await logActivity(currentUser, "Deleted patient", `Patient ID ${id}`);
     res.json({ success: true });
+});
+
+// work schedule
+app.get("/work-schedule", async (req, res) => {
+    const currentUser = req.cookies.user4000;
+    await db.read();
+
+    const userObj = db.data.users.find(u => u.username === currentUser);
+    if (!userObj) {
+        return res.status(401).json({ success: false });
+    }
+
+    const data = db.data.patients.map(p => ({
+        id: p.id,
+        name: p.name,
+        ward: p.ward
+    }));
+
+    res.json({ success: true, schedule: data });
+});
+
+
+// display activity log
+app.get("/activity-log", async (req, res) => {
+    const currentUser = req.cookies.user4000;
+    await db.read();
+
+    const userObj = db.data.users.find(u => u.username === currentUser);
+    if (!userObj || userObj.role !== "Administrator") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    const logs = db.data.activityLog.map(a => ({
+        timestamp: a.timestamp,
+        user: a.user,
+        action: a.action,
+        details: a.details
+    }))
+
+    return res.json({ success: true, logs });
 });
 
 // -------------------------------------------------

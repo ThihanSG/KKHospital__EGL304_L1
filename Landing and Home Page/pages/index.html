@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="/index.css">
 
   <style>
-    
-    
+
+
   </style>
 </head>
 
@@ -55,6 +55,8 @@
         </div>
       </div>
 
+      <button class="tab-btn" data-tab="activity-log">Activity Log</button>
+
     </div>
 
     <!-- =============================
@@ -64,8 +66,8 @@
       <h1> Work Schedule</h1>
 
       <div class="schedule-grid">
-        
-        <div class="schedule-card">
+
+        <!-- <div class="schedule-card">
           <h3>Ward 3A</h3>
           <p class="nurse">👩‍⚕️ Nurse In-Charge: <strong>Nur Aisyah</strong></p>
           <div class="patients">
@@ -100,7 +102,7 @@
           <div class="quota">
             <span>Workload: <strong>2 / 5</strong></span>
           </div>
-        </div>
+        </div> -->
 
       </div>
     </div>
@@ -139,44 +141,53 @@
          VIEW USERS TAB
     ============================== -->
     <div id="tab-view-users" class="tab-section" style="display:none;">
-        <h1>All Users</h1>
-        <input type="text" id="user-search" placeholder="Search users..." class="search-input">
-        <table class="users-table">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="users-list"></tbody>
-        </table>
+      <h1>All Users</h1>
+      <input type="text" id="user-search" placeholder="Search users..." class="search-input">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-list"></tbody>
+      </table>
     </div>
 
-
-    <!-- Patient Record -->
+    <!-- =============================
+         Patient Record
+    ============================== -->
     <div id="tab-add-patient" class="tab-section" style="display: none;">
-        <h1>Patient Records</h1>
-        <form class="create-patient-form">
-            <input type="text" id="patient-name" placeholder="Name" required>
-            <input type="text" id="patient-contact" placeholder="Contact Number" required>
-            <input type="text" id="patient-history" placeholder="Medical History" required>
-            <button id="addPatientBtn" class="action-btn">Add Patient</button>
-        </form>
+      <h1>Patient Records</h1>
+      <form class="create-patient-form">
+        <input type="text" id="patient-name" placeholder="Name" required>
+        <input type="text" id="patient-contact" placeholder="Contact Number" required>
+        <input type="text" id="patient-history" placeholder="Medical History" required>
+        <select id="patient-ward" required>
+          <option value="" disabled selected>Select Ward</option>
+          <option>Ward 2C</option>
+          <option>Ward 3A</option>
+          <option>Ward 4B</option>
+        </select>
+        <button id="addPatientBtn" class="action-btn">Add Patient</button>
+      </form>
 
-        <table class="patients-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Contact Number</th>
-                    <th>Medical History</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="patients-list">
-                <!-- patients list -->
-            </tbody>
-        </table>
+      <table class="patients-table">
+        <thead>
+          <tr>
+            <th>Patient Id</th>
+            <th>Name</th>
+            <th>Contact Number</th>
+            <th>Medical History</th>
+            <th>Ward</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="patients-list">
+          <!-- patients list -->
+        </tbody>
+      </table>
     </div>
 
     <!-- =============================
@@ -270,6 +281,24 @@
       </table>
     </div>
 
+    <!-- =============================
+          Activity Log Tab 
+    ============================== -->
+    <div id="tab-activity-log" class="tab-section" style="display:none;">
+      <h1>System Activity Log</h1>
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Users</th>
+            <th>Actions</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="activity-log-list"></tbody>
+      </table>
+    </div>
+
   </main>
 
   <!-- =============================
@@ -309,49 +338,50 @@
         if (target === "view-users") loadUsers();
         if (target === "shared-files") loadSharedFiles();
         if (target === "upload-file") loadRecentFiles();
+        if (target === "activity-log") loadActivityLog();
       })
     );
 
     // display error message when patient tab is clicked
-      const patientsTabBtn = document.querySelector(".tab-btn[data-tab='add-patient']");
-      if (patientsTabBtn) {
-          patientsTabBtn.addEventListener("click", async () => {
-              try {
-                  const res = await fetch("/status");
-                  const data = await res.json();
-                  const role = data.role;
+    const patientsTabBtn = document.querySelector(".tab-btn[data-tab='add-patient']");
+    if (patientsTabBtn) {
+      patientsTabBtn.addEventListener("click", async () => {
+        try {
+          const res = await fetch("/status");
+          const data = await res.json();
+          const role = data.role;
 
-                  if (role !== "Administrator") {
-                      document.querySelector(".create-patient-form").style.display = "none";
-                      const tbody = document.getElementById("patients-list");
-                      if (tbody) tbody.innerHTML = "";
+          if (role !== "Administrator") {
+            document.querySelector(".create-patient-form").style.display = "none";
+            const tbody = document.getElementById("patients-list");
+            if (tbody) tbody.innerHTML = "";
 
-                      showPopup("Unauthorized. Only admins can access patient records", "error");
-                  } else {
-                      document.querySelector(".create-patient-form").style.display = "block";
-                      loadPatients();
-                  }
-              } catch (err) {
-                  console.error("Error checking patient access:", err);
-              }
-          });
-      }
+            showPopup("Unauthorized. Only admins can access patient records", "error");
+          } else {
+            document.querySelector(".create-patient-form").style.display = "block";
+            loadPatients();
+          }
+        } catch (err) {
+          console.error("Error checking patient access:", err);
+        }
+      });
+    }
 
     // Create user
-      document.querySelector(".create-user-form").addEventListener("submit", async e => {
-          e.preventDefault();
-          const username = document.getElementById("new-username").value.trim();
-          const password = document.getElementById("new-password").value;
-          const role = document.getElementById("user-role").value;
-          if (!username || !password || !role) { showPopup("Please fill in all fields.", "error"); return; }
-          if (password.length < 8) { showPopup("Password must be at least 8 characters long.", "error"); return; }
-          try {
-              const res = await fetch("/create-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) });
-              const data = await res.json();
-              if (data.success) { showPopup("User created!", "success"); e.target.reset(); }
-              else showPopup("Error: " + data.message, "error");
-          } catch (err) { showPopup("Server error: " + err.message, "error"); }
-      });
+    document.querySelector(".create-user-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const username = document.getElementById("new-username").value.trim();
+      const password = document.getElementById("new-password").value;
+      const role = document.getElementById("user-role").value;
+      if (!username || !password || !role) { showPopup("Please fill in all fields.", "error"); return; }
+      if (password.length < 8) { showPopup("Password must be at least 8 characters long.", "error"); return; }
+      try {
+        const res = await fetch("/create-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) });
+        const data = await res.json();
+        if (data.success) { showPopup("User created!", "success"); e.target.reset(); }
+        else showPopup("Error: " + data.message, "error");
+      } catch (err) { showPopup("Server error: " + err.message, "error"); }
+    });
 
     /* LOAD USERS */
     async function loadUsers() {
@@ -378,17 +408,17 @@
       });
 
       // search bar
-        const userSearch = document.getElementById("user-search");
-        userSearch.addEventListener("input", () => {
-            const filter = userSearch.value.toLowerCase();
-            const rows = document.querySelectorAll("#users-list tr");
-            rows.forEach(row => {
-                const username = row.cells[0].textContent.toLowerCase();
-                const role = row.cells[1].textContent.toLowerCase();
-                if (username.includes(filter) || role.includes(filter)) { row.style.display = ""; }
-                else { row.style.display = "none"; }
-            });
+      const userSearch = document.getElementById("user-search");
+      userSearch.addEventListener("input", () => {
+        const filter = userSearch.value.toLowerCase();
+        const rows = document.querySelectorAll("#users-list tr");
+        rows.forEach(row => {
+          const username = row.cells[0].textContent.toLowerCase();
+          const role = row.cells[1].textContent.toLowerCase();
+          if (username.includes(filter) || role.includes(filter)) { row.style.display = ""; }
+          else { row.style.display = "none"; }
         });
+      });
     }
 
     async function deleteUser(e) {
@@ -412,58 +442,100 @@
     // create Patient
     const createPatientForm = document.querySelector(".create-patient-form");
     createPatientForm.addEventListener("submit", async e => {
-        e.preventDefault();
-        const name = document.getElementById("patient-name").value.trim();
-        const medicalHistory = document.getElementById("patient-history").value.trim();
-        const contactNumber = document.getElementById("patient-contact").value.trim();
-        // contact validation
-        const contactRegex = /^[689][0-9]{7}$/;
-        if (!contactRegex.test(contactNumber)) { showPopup("Contact number must be at least 8 digits and start with 6,8 or 9.", "error"); return; }
-        if (!name || !contactNumber || !medicalHistory) { showPopup("Please fill in all fields.", "error"); return; }
-        try {
-            const res = await fetch("/create-patient", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, contactNumber, medicalHistory }) });
-            const data = await res.json();
-            if (data.success) { showPopup("Patient added successfully!", "success"); createPatientForm.reset(); loadPatients(); }
-            else { showPopup("Error: " + data.message, "error"); }
-        } catch (err) { showPopup("Server error: " + err.message, "error"); }
+      e.preventDefault();
+      const name = document.getElementById("patient-name").value.trim();
+      const medicalHistory = document.getElementById("patient-history").value.trim();
+      const contactNumber = document.getElementById("patient-contact").value.trim();
+      const ward = document.getElementById("patient-ward").value;
+      // contact validation
+      const contactRegex = /^[689][0-9]{7}$/;
+      if (!contactRegex.test(contactNumber)) { showPopup("Contact number must be at least 8 digits and start with 6,8 or 9.", "error"); return; }
+      if (!name || !contactNumber || !medicalHistory) { showPopup("Please fill in all fields.", "error"); return; }
+      try {
+        const res = await fetch("/create-patient", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, contactNumber, medicalHistory, ward }) });
+        const data = await res.json();
+        if (data.success) { showPopup("Patient added successfully!", "success"); createPatientForm.reset(); loadPatients(); }
+        else { showPopup("Error: " + data.message, "error"); }
+      } catch (err) { showPopup("Server error: " + err.message, "error"); }
     });
+
     // load patients
     async function loadPatients() {
-        try {
-            const res = await fetch("/patients");
-            const data = await res.json();
-            if (!data.success) return;
-            const tbody = document.getElementById("patients-list");
-            tbody.innerHTML = "";
-            data.patients.forEach(p => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
+      try {
+        const res = await fetch("/patients");
+        const data = await res.json();
+        if (!data.success) return;
+        const tbody = document.getElementById("patients-list");
+        tbody.innerHTML = "";
+        data.patients.forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+                    <td>${String(p.id).padStart(3, "0")}</td>
                     <td>${p.name}</td>
                     <td>${p.contactNumber}</td>
                     <td>${p.medicalHistory}</td>
+                    <td>${p.ward}</td>
                     <td>
                         <button class="btn-remove-patient" data-id="${p.id}">Delete</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
-            });
+          tbody.appendChild(tr);
+        });
 
-            // delete patient
-            document.querySelectorAll(".btn-remove-patient").forEach(btn => {
-                btn.addEventListener("click", async e => {
-                    const id = Number(e.target.dataset.id);
-                    if (!confirm(`Delete patient?`)) return;
-                    try {
-                        const res = await fetch(`/patients/${id}`, { method: "DELETE" });
-                        const result = await res.json();
-                        if (result.success) { showPopup("Patient deleted successfully!", "success"); loadPatients(); }
-                        else { showPopup("Error: " + result.message, "error"); }
-                    } catch (err) { showPopup("Server error: " + err.message, "error"); }
-                });
-            });
-        } catch (err) { showPopup("Error loading patients: " + err.message, "error"); }
+        // delete patient
+        document.querySelectorAll(".btn-remove-patient").forEach(btn => {
+          btn.addEventListener("click", async e => {
+            const id = Number(e.target.dataset.id);
+            if (!confirm(`Delete patient?`)) return;
+            try {
+              const res = await fetch(`/patients/${id}`, { method: "DELETE" });
+              const result = await res.json();
+              if (result.success) { showPopup("Patient deleted successfully!", "success"); loadPatients(); }
+              else { showPopup("Error: " + result.message, "error"); }
+            } catch (err) { showPopup("Server error: " + err.message, "error"); }
+          });
+        });
+      } catch (err) { showPopup("Error loading patients: " + err.message, "error"); }
     }
-    loadPatients();
+    applyRolePermissions();
+
+    // display work schedule
+    async function loadWorkSchedule() {
+      try {
+        const res = await fetch("/work-schedule");
+        const data = await res.json();
+        if (!data.success) return;
+
+        const wards = [
+          { name: "Ward 2C", nurse: "Lim Jia Wen" },
+          { name: "Ward 3A", nurse: "Nur Aisyah" },
+          { name: "Ward 4B", nurse: "John Lee" }
+        ];
+
+        const grid = document.querySelector(".schedule-grid");
+        grid.innerHTML = "";
+
+        wards.forEach(w => {
+          const patients = data.schedule.filter(p => p.ward === w.name);
+
+          const card = document.createElement("div");
+          card.classList.add("schedule-card");
+          card.innerHTML = `
+            <h3>${w.name}</h3>
+            <p class="nurse">👩‍⚕️ Nurse In-Charge: <strong>${w.nurse}</strong></p>
+            <div class="patients">
+              ${patients.map(p => `<p>• Patient ${String(p.id).padStart(3, "0")} — ${p.name}</p>`).join("")}
+            </div>
+            <div class="quota">
+              <span>Workload: <strong>${patients.length} / 5</strong></span>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+      catch (err) { console.error("Error loading work schedule", err); }
+    }
+    loadWorkSchedule();
 
     const updateModal = document.getElementById("update-user-modal");
     const updateForm = document.getElementById("update-user-form");
@@ -481,34 +553,34 @@
     );
 
     updateForm.addEventListener("submit", async e => {
-          e.preventDefault();
-          const originalUsername = (updateForm.dataset.originalUsername || '').toString().trim();
-          const role = document.getElementById("update-role").value;
-          const password = document.getElementById("update-password").value.trim();
+      e.preventDefault();
+      const originalUsername = (updateForm.dataset.originalUsername || '').toString().trim();
+      const role = document.getElementById("update-role").value;
+      const password = document.getElementById("update-password").value.trim();
 
-          if (!originalUsername || !role) { showPopup("Please fill in all fields.", "error"); return; }
-          if (password && password.length < 8) { showPopup("Password must be at least 8 characters long.", "error"); return; }
+      if (!originalUsername || !role) { showPopup("Please fill in all fields.", "error"); return; }
+      if (password && password.length < 8) { showPopup("Password must be at least 8 characters long.", "error"); return; }
 
-          const newDetails = { username: originalUsername, role };
-          if (password) newDetails.password = password;   //include it if it is not empty
+      const newDetails = { username: originalUsername, role };
+      if (password) newDetails.password = password;   //include it if it is not empty
 
-          try {
-              const res = await fetch("/update-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newDetails) });
-              const data = await res.json();
-              if (data.success) {
-                  showPopup("User updated!", "success");
-                  updateModal.style.display = "none";
-                  loadUsers();
-              } else {
-                  // restore display to avoid showing undefined to user
-                  document.getElementById("update-username").value = originalUsername;
-                  showPopup("Error: " + data.message, "error");
-              }
-          } catch (err) {
-              document.getElementById("update-username").value = originalUsername;
-              showPopup("Server error: " + err.message, "error");
-          }
-      });
+      try {
+        const res = await fetch("/update-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newDetails) });
+        const data = await res.json();
+        if (data.success) {
+          showPopup("User updated!", "success");
+          updateModal.style.display = "none";
+          loadUsers();
+        } else {
+          // restore display to avoid showing undefined to user
+          document.getElementById("update-username").value = originalUsername;
+          showPopup("Error: " + data.message, "error");
+        }
+      } catch (err) {
+        document.getElementById("update-username").value = originalUsername;
+        showPopup("Server error: " + err.message, "error");
+      }
+    });
 
     /* FILE PREVIEW */
     document.getElementById("file-input").addEventListener("change", function () {
@@ -611,7 +683,7 @@
       } else showPopup("Error deleting file", "error");
     }
 
-    
+
     async function applyRolePermissions() {
       const res = await fetch("/status");
       const data = await res.json();
@@ -619,13 +691,37 @@
       if (data.role !== "Administrator") {
         document.querySelector('[data-tab="create-user"]').style.display = "none";
         document.querySelector('[data-tab="view-users"]').style.display = "none";
+        document.querySelector('[data-tab="activity-log"]').style.display = "none";
       }
     }
-    applyRolePermissions();
+    loadPatients();
+
+    // activity log
+    async function loadActivityLog() {
+      try {
+        const res = await fetch("/activity-log");
+        const data = await res.json();
+        if (!data.success) return;
+
+        const tbody = document.getElementById("activity-log-list");
+        tbody.innerHTML = "";
+        data.logs.slice().reverse().forEach(log => {
+          const tr = document.createElement("tr");
+
+          tr.innerHTML = `
+            <td>${new Date(log.timestamp).toLocaleString()}</td>
+            <td>${log.user}</td>
+            <td>${log.action}</td>
+            <td>${log.details}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) { showPopup("Failed to load activity log", "error"); }
+    }
 
 
-  document.querySelectorAll(".sub-tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
+    document.querySelectorAll(".sub-tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
         const target = btn.dataset.tab;
 
         // Remove active from BOTH main tabs and sub-tabs
@@ -643,44 +739,45 @@
 
         // Load data
         if (target === "view-users") loadUsers();
-        if (target === "create-user") {} // no loading needed
+        if (target === "activity-log") loadActivityLog();
+        if (target === "create-user") { } // no loading needed
         if (target === "shared-files") loadSharedFiles();
         if (target === "upload-file") loadRecentFiles();
+      });
     });
-});
 
-// Toggle dropdown on main tab click
-document.querySelectorAll(".dropdown-tab > .tab-btn").forEach(btn => {
-  btn.addEventListener("click", e => {
-    e.stopPropagation();
+    // Toggle dropdown on main tab click
+    document.querySelectorAll(".dropdown-tab > .tab-btn").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
 
-    const dropdown = btn.nextElementSibling;
+        const dropdown = btn.nextElementSibling;
 
-    // Close other dropdowns
+        // Close other dropdowns
+        document.querySelectorAll(".dropdown-menu").forEach(menu => {
+          if (menu !== dropdown) menu.classList.remove("show");
+        });
+
+        dropdown.classList.toggle("show");
+      });
+    });
+
+    // Prevent dropdown clicks from closing itself
     document.querySelectorAll(".dropdown-menu").forEach(menu => {
-      if (menu !== dropdown) menu.classList.remove("show");
+      menu.addEventListener("click", e => e.stopPropagation());
     });
 
-    dropdown.classList.toggle("show");
-  });
-});
-
-// Prevent dropdown clicks from closing itself
-document.querySelectorAll(".dropdown-menu").forEach(menu => {
-  menu.addEventListener("click", e => e.stopPropagation());
-});
-
-// Close dropdown when clicking outside
-document.addEventListener("click", () => {
-  document.querySelectorAll(".dropdown-menu").forEach(menu => {
-    menu.classList.remove("show");
-  });
-});
+    // Close dropdown when clicking outside
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".dropdown-menu").forEach(menu => {
+        menu.classList.remove("show");
+      });
+    });
 
 
 
 
-    
+
   </script>
 </body>
 
