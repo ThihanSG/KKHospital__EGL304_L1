@@ -264,21 +264,29 @@
     <!-- =============================
          SHARED FILES TAB
     ============================== -->
-    <div id="tab-shared-files" class="tab-section" style="display:none;">
+   <div id="tab-shared-files" class="tab-section" style="display:none;">
       <h1>Shared Files</h1>
 
-      <table class="users-table">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Uploaded By</th>
-            <th>Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
+      <div class="shared-files-header">
+        <input 
+          type="text" 
+          id="shared-file-search" 
+          placeholder="Search files by title or uploader..."
+        >
+      </div>
 
-        <tbody id="shared-files-list"></tbody>
-      </table>
+      <br>
+
+      <!-- Header row -->
+      <div class="files-header">
+        <span>File</span>
+        <span>Uploaded By</span>
+        <span>Date</span>
+        <span>Actions</span>
+      </div>
+
+      <!-- File list -->
+      <div class="files-list" id="shared-files-list"></div>
     </div>
 
     <!-- =============================
@@ -641,30 +649,60 @@
       });
     }
 
-    /* SHARED FILES */
+    let allSharedFiles = [];
+
     async function loadSharedFiles() {
       const res = await fetch("/files");
       const data = await res.json();
 
-      const tbody = document.getElementById("shared-files-list");
-      tbody.innerHTML = "";
-
-      data.files.forEach(f => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${f.title}</td>
-          <td>${f.uploader}</td>
-          <td>${new Date(f.date).toLocaleString()}</td>
-          <td>
-            <a href="/download-file/${f._id}" class="btn-update">Download</a>
-            <button class="btn-remove" onclick="deleteFile('${f._id}')">Delete</button>
-          </td>
-        `;
-
-        tbody.appendChild(tr);
-      });
+      allSharedFiles = data.files || [];
+      renderSharedFiles(allSharedFiles);
     }
+
+    function renderSharedFiles(files) {
+    const container = document.getElementById("shared-files-list");
+    container.innerHTML = "";
+
+    if (files.length === 0) {
+      container.innerHTML =
+        "<p style='text-align:center; padding:20px;'>No files found.</p>";
+      return;
+    }
+
+    files.forEach(f => {
+      const row = document.createElement("div");
+      row.className = "file-row";
+
+      row.innerHTML = `
+        <!-- File -->
+        <div class="file-cell file-name-cell">
+          <div class="file-icon">📄</div>
+          ${f.title}
+        </div>
+
+        <!-- Uploaded By -->
+        <div class="file-cell">
+          ${f.uploader}
+        </div>
+
+        <!-- Date -->
+        <div class="file-cell">
+          ${new Date(f.date).toLocaleString()}
+        </div>
+
+        <!-- Actions -->
+        <div class="file-actions">
+          <a href="/download-file/${f.id}">Download</a>
+          <button onclick="deleteFile('${f.id}')">Delete</button>
+        </div>
+      `;
+
+      container.appendChild(row);
+    });
+  }
+
+
+
 
     async function deleteFile(id) {
       if (!confirm("Delete this file?")) return;
@@ -772,6 +810,18 @@
       document.querySelectorAll(".dropdown-menu").forEach(menu => {
         menu.classList.remove("show");
       });
+    });
+
+
+    document.getElementById("shared-file-search").addEventListener("input", e => {
+      const keyword = e.target.value.toLowerCase();
+
+      const filtered = allSharedFiles.filter(f =>
+        f.title.toLowerCase().includes(keyword) ||
+        f.uploader.toLowerCase().includes(keyword)
+      );
+
+      renderSharedFiles(filtered);
     });
 
 

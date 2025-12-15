@@ -8,6 +8,7 @@ import bodyParser from "body-parser";
 import path from "path";
 import fs from "fs";
 import bcrypt from "bcrypt";
+import multer from "multer";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -29,6 +30,18 @@ const db = new Low(adapter, defaultData);
 await db.read();
 db.data ||= defaultData;
 await db.write();
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
+
 
 // Max idle time (5 min)
 const maxIdleTime = 5 * 60 * 1000;
@@ -406,6 +419,84 @@ app.get("/activity-log", async (req, res) => {
     }))
 
     return res.json({ success: true, logs });
+});
+
+
+app.post("/upload-file", upload.single("file"), async (req, res) => {
+  try {
+    await db.read();
+
+    db.data.files ||= []; // ✅ SAFETY FIX
+
+    const { title, desc } = req.body;
+    const currentUser = req.cookies.user4000;
+
+    if (!req.file || !title) {
+      return res.json({ success: false, message: "Missing file or title" });
+    }
+
+    const newFile = {
+      id: Date.now().toString(),
+      title,
+      desc,
+      filename: req.file.filename,
+      uploader: currentUser,
+      date: Date.now()
+    };
+
+    db.data.files.push(newFile);
+    await db.write();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.json({ success: false, message: "Upload failed" });
+  }
+});
+
+
+
+app.get("/files", async (req, res) => {
+  await db.read();
+  res.json({ files: db.data.files });
+});
+
+
+app.get("/recent-files", async (req, res) => {
+  await db.read();
+  const recent = [...db.data.files]
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 5);
+
+  res.json({ files: recent });
+});
+
+
+app.get("/download-file/:id", async (req, res) => {
+  await db.read();
+
+  const file = db.data.files.find(f => f.id === req.params.id);
+  if (!file) return res.sendStatus(404);
+
+  res.download(path.join("uploads", file.filename));
+});
+
+
+app.post("/delete-file", async (req, res) => {
+  await db.read();
+
+  const { id } = req.body;
+  const index = db.data.files.findIndex(f => f.id === id);
+
+  if (index === -1) return res.json({ success: false });
+
+  const file = db.data.files[index];
+  fs.unlinkSync(path.join("uploads", file.filename));
+
+  db.data.files.splice(index, 1);
+  await db.write();
+
+  res.json({ success: true });
 });
 
 // -------------------------------------------------
