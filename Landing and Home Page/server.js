@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, "images")));
 // Initialize DB
 const file = join(__dirname, '../shared-db/db.json');
 const adapter = new JSONFile(file);
-const defaultData = { activeUser: null, users: [], lastActivity: null, activityLog: [] };
+const defaultData = { activeUser: null, users: [], roles: ["Administrator", "User"], lastActivity: null, activityLog: [] };
 
 const db = new Low(adapter, defaultData);
 await db.read();
@@ -134,7 +134,7 @@ app.post("/login", async (req, res) => {
 
     const user = db.data.users.find(u => u.username === username);
 
-    if (user && await bcrypt.compare(password, user.password)) {
+    if(user && user.status == "active" && await bcrypt.compare(password, user.password)) {
         db.data.activeUser = username;
         db.data.lastActivity = Date.now();
         await db.write();
@@ -223,38 +223,52 @@ app.get("/status", async (req, res) => {
 // -------------------------------------------------
 // Create User: For account with Admin Role
 // -------------------------------------------------
+// -------------------------------------------------
+// Create User (OPEN REGISTRATION → pending approval)
+// -------------------------------------------------
 app.post("/create-user", async (req, res) => {
     try {
-        const currentUser = req.cookies.user4000;
+        const { username, password, role } = req.body;
+        const createdBy = req.cookies.user4000 || "Public";
         await db.read();
 
-        const userObj = db.data.users.find(u => u.username === currentUser);
-        if (!userObj || userObj.role !== "Administrator") {
-            return res.status(403).json({ success: false, message: "Unauthorized" });
-        }
-
-        const { username, password, role } = req.body;
-
         if (!username || !password || !role) {
-            return res.status(400).json({ success: false, message: "Missing fields" });
+            return res.json({ success: false, message: "Missing fields" });
         }
 
         if (db.data.users.find(u => u.username === username)) {
-            return res.status(400).json({ success: false, message: "Username exists" });
+            return res.json({ success: false, message: "Username already exists" });
         }
 
         const hashed = await bcrypt.hash(password, 10);
-        db.data.users.push({ username, password: hashed, role });
-        await db.write();
-        await logActivity(currentUser, "Created user", `Username: ${username}, Role: ${role}`);
 
-        return res.json({ success: true });
+        db.data.users.push({
+            username,
+            password: hashed,
+            role,
+            status: "pending" ,
+            createdBy 
+        });
+
+        await db.write();
+
+        await logActivity(
+            username,
+            "Account requested",
+            `Requested role: ${role}`
+        );
+
+        res.json({
+            success: true,
+            message: "Account request submitted. Awaiting admin approval."
+        });
 
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ success: false, message: "Server error" });
+        res.status(500).json({ success: false, message: "Server error" });
     }
 });
+
 
 // -------------------------------------------------
 // View All users : For account with Admin Role
@@ -329,6 +343,99 @@ app.post("/delete-user", async (req, res) => {
 
     return res.json({ success: true });
 });
+
+// To View User Requests
+app.get("/user-requests", async (req, res ) => {
+    const currentUser = req.cookies.user4000;
+    await db.read();
+
+    const admin = db.data.users.find(u => u.username === currentUser);
+    if (!admin || admin.role !== "Administrator") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    const requests = db.data.users.filter(u => u.status === "pending").map(u => ({
+        username: u.username,
+        role: u.role,
+        createdBy: u.createdBy
+    }));
+
+    return res.json({ success: true, requests });
+});
+
+// To approve user 
+app.post("/approve-user", async (req, res) => {
+    const {username} = req.body;
+    await db.read();
+
+    const user = db.data.users.find(u => u.username === username);
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.status = "active";
+    await db.write();
+
+    await logActivity("Admin", "Approved user", `Username: ${username}`);
+    res.json({success: true});
+});
+
+// To Reject User
+app.post("/reject-user", async (req, res) => {
+    const {username} = req.body;
+    await db.read();
+
+    const index = db.data.users.findIndex(u => u.username === username);
+    if (index === -1) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    db.data.users.splice(index, 1);
+    await db.write();
+    
+    await logActivity("Admin", "Rejected user", `Username: ${username}`);
+    res.json({success: true});
+
+});
+
+
+// To Create Roles
+app.post("/create-role", async (req, res) => {
+    const currentUser = req.cookies.user4000;
+    const { role } = req.body;
+
+    await db.read();
+
+    const admin = db.data.users.find(u => u.username === currentUser);
+    if (!admin || admin.role !== "Administrator") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    if (!role) {
+        return res.json({ success: false, message: "Role name required" });
+    }
+
+    db.data.roles ||= [];
+
+    if (db.data.roles.includes(role)) {
+        return res.json({ success: false, message: "Role already exists" });
+    }
+
+    db.data.roles.push(role);
+    await db.write();
+
+    await logActivity(currentUser, "Created role", role);
+
+    res.json({ success: true });
+});
+
+
+// get roles
+app.get("/roles", async (req, res) => {
+    await db.read();
+    res.json({roles: db.data.roles});
+});
+
 
 
 // add patient

@@ -48,10 +48,12 @@
       <button class="tab-btn" data-tab="add-patient">Patients</button>
       <div class="dropdown-tab">
         <button class="tab-btn">Users ▾</button>
-
         <div class="dropdown-menu">
           <button class="sub-tab-btn" data-tab="create-user">Create User</button>
           <button class="sub-tab-btn" data-tab="view-users">View Users</button>
+          <button class="sub-tab-btn" data-tab="users-request">User Requests</button>
+          <button class="sub-tab-btn" data-tab="role-management">Role Management</button>
+
         </div>
       </div>
 
@@ -66,44 +68,7 @@
       <h1> Work Schedule</h1>
 
       <div class="schedule-grid">
-
-        <!-- <div class="schedule-card">
-          <h3>Ward 3A</h3>
-          <p class="nurse">👩‍⚕️ Nurse In-Charge: <strong>Nur Aisyah</strong></p>
-          <div class="patients">
-            <p>• Patient 001 — Sarah Lim</p>
-            <p>• Patient 014 — Megan Tan</p>
-          </div>
-          <div class="quota">
-            <span>Workload: <strong>2 / 5</strong></span>
-          </div>
-        </div>
-
-        <div class="schedule-card">
-          <h3>Ward 4B</h3>
-          <p class="nurse">👨‍⚕️ Nurse In-Charge: <strong>John Lee</strong></p>
-          <div class="patients">
-            <p>• Patient 007 — Ahmad Rahim</p>
-            <p>• Patient 021 — Chloe Ng</p>
-            <p>• Patient 030 — Lucas Wong</p>
-          </div>
-          <div class="quota">
-            <span>Workload: <strong>3 / 5</strong></span>
-          </div>
-        </div>
-
-        <div class="schedule-card">
-          <h3>Ward 2C</h3>
-          <p class="nurse">👩‍⚕️ Nurse In-Charge: <strong>Lim Jia Wen</strong></p>
-          <div class="patients">
-            <p>• Patient 012 — Tan Wei</p>
-            <p>• Patient 088 — Siti Nur</p>
-          </div>
-          <div class="quota">
-            <span>Workload: <strong>2 / 5</strong></span>
-          </div>
-        </div> -->
-
+        <!-- schedule cards inserted here dynamically -->
       </div>
     </div>
 
@@ -128,8 +93,6 @@
           <label>Role</label>
           <select id="user-role" required>
             <option value="" disabled selected>Select role</option>
-            <option>Administrator</option>
-            <option>User</option>
           </select>
         </div>
 
@@ -154,6 +117,55 @@
         <tbody id="users-list"></tbody>
       </table>
     </div>
+
+
+    <!-- =============================
+     USER REQUESTS TAB
+    ============================== -->
+    <div id="tab-users-request" class="tab-section" style="display:none;">
+      <h1>User Requests</h1>
+
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Requested Role</th>
+            <th>Created By</th> 
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="user-requests-list"></tbody>
+      </table>
+    </div>
+
+    <!-- =============================
+     ROLE MANAGEMENT TAB
+    ============================== -->
+    <div id="tab-role-management" class="tab-section" style="display:none;">
+
+      <div class="role-management-wrapper">
+        <h1>Role Management</h1>
+
+        <form id="create-role-form" class="create-user-form">
+          <div class="input-group">
+            <label>Role Name</label>
+            <input id="new-role-name" required>
+          </div>
+          <button class="action-btn">Create Role</button>
+        </form>
+
+        <div class="roles-card">
+          <h2 class="roles-title">Existing Roles</h2>
+          <ul id="roles-list" class="roles-list"></ul>
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+
 
     <!-- =============================
          Patient Record
@@ -210,9 +222,8 @@
 
           <div class="input-group">
             <label>Role</label>
-            <select id="update-role">
-              <option>Administrator</option>
-              <option>User</option>
+            <select id="update-role" required>
+              <option value="" disabled>Select role</option>
             </select>
           </div>
 
@@ -274,7 +285,6 @@
           placeholder="Search files by title or uploader..."
         >
       </div>
-
       <br>
 
       <!-- Header row -->
@@ -386,8 +396,10 @@
       try {
         const res = await fetch("/create-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) });
         const data = await res.json();
-        if (data.success) { showPopup("User created!", "success"); e.target.reset(); }
-        else showPopup("Error: " + data.message, "error");
+        if (data.success) {
+          showPopup("User request submitted. Awaiting admin approval.", "success");
+          e.target.reset();
+        } else showPopup("Error: " + data.message, "error");
       } catch (err) { showPopup("Server error: " + err.message, "error"); }
     });
 
@@ -550,11 +562,18 @@
 
     function showUpdatePopup(e) {
       const btn = e.currentTarget;
-      document.getElementById("update-username").value = btn.dataset.username;
-      document.getElementById("update-role").value = btn.dataset.role;
-      updateForm.dataset.originalUsername = btn.dataset.username;
+      const username = btn.dataset.username;
+      const role = btn.dataset.role;
+
+      document.getElementById("update-username").value = username;
+      updateForm.dataset.originalUsername = username;
+
+      // 🔥 Load roles dynamically + preselect
+      loadUpdateRoleOptions(role);
+
       updateModal.style.display = "flex";
     }
+
 
     document.getElementById("cancel-update").addEventListener("click", () =>
       updateModal.style.display = "none"
@@ -701,9 +720,6 @@
     });
   }
 
-
-
-
     async function deleteFile(id) {
       if (!confirm("Delete this file?")) return;
 
@@ -727,9 +743,11 @@
       const data = await res.json();
 
       if (data.role !== "Administrator") {
-        document.querySelector('[data-tab="create-user"]').style.display = "none";
+        // document.querySelector('[data-tab="create-user"]').style.display = "none";
         document.querySelector('[data-tab="view-users"]').style.display = "none";
         document.querySelector('[data-tab="activity-log"]').style.display = "none";
+        document.querySelector('[data-tab="users-request"]').style.display = "none";
+        document.querySelector('[data-tab="role-management"]').style.display = "none";
       }
     }
     loadPatients();
@@ -778,7 +796,9 @@
         // Load data
         if (target === "view-users") loadUsers();
         if (target === "activity-log") loadActivityLog();
-        if (target === "create-user") { } // no loading needed
+        if (target === "create-user") loadRoleOptions();
+        if (target === "users-request") loadUserRequests();
+        if (target === "role-management") loadRoles();
         if (target === "shared-files") loadSharedFiles();
         if (target === "upload-file") loadRecentFiles();
       });
@@ -823,6 +843,127 @@
 
       renderSharedFiles(filtered);
     });
+
+    async function loadUserRequests() {
+    const res = await fetch("/user-requests");
+    const data = await res.json();
+    if (!data.success) return;
+
+    const tbody = document.getElementById("user-requests-list");
+    tbody.innerHTML = "";
+
+    data.requests.forEach(u => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u.username}</td>
+        <td>${u.role}</td>
+        <td>${u.createdBy}</td>
+        <td>
+          <button class="btn-save" onclick="approveUser('${u.username}')">Approve</button>
+          <button class="btn-remove" onclick="rejectUser('${u.username}')">Reject</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function approveUser(username) {
+    await fetch("/approve-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username })
+    });
+    showPopup("User approved.", "success");
+    loadUserRequests();
+  }
+
+  async function rejectUser(username) {
+    await fetch("/reject-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username })
+    });
+    showPopup("User rejected.", "info");
+    loadUserRequests();
+  }
+
+  document.getElementById("create-role-form")?.addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const role = document.getElementById("new-role-name").value.trim();
+    if (!role) return;
+
+    const res = await fetch("/create-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      showPopup("Role created.", "success");
+      e.target.reset();
+      loadRoles();
+    } else {
+      showPopup(data.message, "error");
+    }
+  });
+
+  async function loadRoles() {
+    const res = await fetch("/roles");
+    const data = await res.json();
+
+    const ul = document.getElementById("roles-list");
+    ul.innerHTML = "";
+    data.roles.forEach(r => {
+      const li = document.createElement("li");
+      li.textContent = r;
+      ul.appendChild(li);
+    });
+  }
+
+  async function loadRoleOptions() {
+    const res = await fetch("/roles");
+    const data = await res.json();
+
+    const select = document.getElementById("user-role");
+    if (!select) return;
+
+    select.innerHTML = `<option value="" disabled selected>Select role</option>`;
+
+    data.roles.forEach(role => {
+      const opt = document.createElement("option");
+      opt.value = role;
+      opt.textContent = role;
+      select.appendChild(opt);
+    });
+  }
+
+  async function loadUpdateRoleOptions(selectedRole) {
+    const res = await fetch("/roles");
+    const data = await res.json();
+
+    const select = document.getElementById("update-role");
+    if (!select) return;
+
+    select.innerHTML = `<option value="" disabled>Select role</option>`;
+
+    data.roles.forEach(role => {
+      const opt = document.createElement("option");
+      opt.value = role;
+      opt.textContent = role;
+
+      if (role === selectedRole) {
+        opt.selected = true; // ⭐ pre-select current role
+      }
+
+      select.appendChild(opt);
+    });
+  }
+
+
+
+
 
 
 
