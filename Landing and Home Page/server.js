@@ -43,8 +43,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-// Max idle time (5 min)
-const maxIdleTime = 5 * 60 * 1000;
+// Max idle time (30 min)
+const maxIdleTime = 30 * 60 * 1000;
 
 
 async function checkAuth(req, res, next) {
@@ -435,6 +435,77 @@ app.get("/roles", async (req, res) => {
     await db.read();
     res.json({roles: db.data.roles});
 });
+
+
+// Update role
+app.post("/update-role", async (req, res) => {
+  const currentUser = req.cookies.user4000;
+  const { oldRole, newRole } = req.body;
+
+  await db.read();
+
+  // Admin check
+  const admin = db.data.users.find(u => u.username === currentUser);
+  if (!admin || admin.role !== "Administrator") {
+    return res.status(403).json({ success: false, message: "Unauthorized" });
+  }
+
+  if (!oldRole || !newRole) {
+    return res.json({ success: false, message: "Missing fields" });
+  }
+
+  if (!db.data.roles.includes(oldRole)) {
+    return res.json({ success: false, message: "Old role not found" });
+  }
+
+  if (db.data.roles.includes(newRole)) {
+    return res.json({ success: false, message: "Role already exists" });
+  }
+
+  // Update role in roles array
+  db.data.roles = db.data.roles.map(r => r === oldRole ? newRole : r);
+
+  // Update role for users using this role
+  db.data.users.forEach(u => {
+    if (u.role === oldRole) {
+      u.role = newRole;
+    }
+  });
+
+  await db.write();
+  await logActivity(currentUser, "Updated role", `${oldRole} → ${newRole}`);
+
+  res.json({ success: true });
+});
+
+
+app.post("/delete-role", async (req, res) => {
+    const currentUser = req.cookies.user4000;
+    const { role } = req.body;
+
+    await db.read();
+
+    const admin = db.data.users.find(u => u.username === currentUser);
+    if (!admin || admin.role !== "Administrator") {
+        return res.status(403).json({ success: false });
+    }
+
+    if (["Administrator", "User"].includes(role)) {
+        return res.json({ success: false, message: "Default roles cannot be deleted" });
+    }
+
+    // Prevent deletion if role is in use
+    if (db.data.users.some(u => u.role === role)) {
+        return res.json({ success: false, message: "Role is assigned to users" });
+    }
+
+    db.data.roles = db.data.roles.filter(r => r !== role);
+    await db.write();
+
+    await logActivity(currentUser, "Deleted role", role);
+    res.json({ success: true });
+});
+
 
 
 

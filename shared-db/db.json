@@ -89,7 +89,7 @@
     }
   ],
   "activeUser": "Admin",
-  "lastActivity": 1766163923149,
+  "lastActivity": 1766242007334,
   "activityLog": [
     {
       "timestamp": 1765708164445,
@@ -104,12 +104,6 @@
       "details": "User"
     },
     {
-      "timestamp": 1766156795956,
-      "user": "Admin",
-      "action": "Created role",
-      "details": "Staff"
-    },
-    {
       "timestamp": 1766159138322,
       "user": "Admin",
       "action": "Created role",
@@ -122,10 +116,22 @@
       "details": "Username: Thi, Role: User"
     },
     {
-      "timestamp": 1766160024170,
+      "timestamp": 1766241810807,
       "user": "Admin",
-      "action": "Created user",
-      "details": "Username: Han, Role: Administrator"
+      "action": "Updated role",
+      "details": "Staff → Staff v2"
+    },
+    {
+      "timestamp": 1766241824501,
+      "user": "Admin",
+      "action": "Deleted role",
+      "details": "Staff v2"
+    },
+    {
+      "timestamp": 1766241829028,
+      "user": "Admin",
+      "action": "Created role",
+      "details": "Staff"
     }
   ],
   "files": [
@@ -148,7 +154,7 @@
   ],
   "roles": [
     "User",
-    "Staff",
-    "Administrator"
+    "Administrator",
+    "Staff"
   ]
 }

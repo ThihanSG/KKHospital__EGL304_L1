@@ -37,7 +37,7 @@
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="schedule">Work Schedule</button>
       <div class="dropdown-tab">
-        <button class="tab-btn">Files ▾</button>
+        <button class="tab-btn dropdown-only">Files ▾</button>
 
         <div class="dropdown-menu">
           <button class="sub-tab-btn" data-tab="shared-files">Shared Files</button>
@@ -47,7 +47,7 @@
 
       <button class="tab-btn" data-tab="add-patient">Patients</button>
       <div class="dropdown-tab">
-        <button class="tab-btn">Users ▾</button>
+        <button class="tab-btn dropdown-only">Users ▾</button>
         <div class="dropdown-menu">
           <button class="sub-tab-btn" data-tab="create-user">Create User</button>
           <button class="sub-tab-btn" data-tab="view-users">View Users</button>
@@ -164,6 +164,29 @@
     </div>
 
 
+    <!-- Edit Role Modal -->
+    <div id="edit-role-modal" class="modal">
+      <div class="modal-content">
+        <h3>Edit Role</h3>
+
+        <form id="edit-role-form">
+          <input type="hidden" id="old-role-name">
+
+          <div class="input-group">
+            <label>New Role Name</label>
+            <input type="text" id="edit-role-new-name" required>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="submit" class="btn-save">Save</button>
+            <button type="button" class="btn-cancel" onclick="closeEditRole()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
 
 
 
@@ -236,7 +259,7 @@
     </div>
 
     <!-- =============================
-         UPLOAD FILE TAB (FIXED)
+         UPLOAD FILE TAB 
     ============================== -->
     <div id="tab-upload-file" class="tab-section" style="display:none;">
       <h1>Upload File</h1>
@@ -345,6 +368,9 @@
     tabButtons.forEach(btn =>
       btn.addEventListener("click", () => {
         const target = btn.dataset.tab;
+
+       
+        if (btn.classList.contains("dropdown-only")) return;
 
         tabButtons.forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
@@ -909,18 +935,112 @@
     }
   });
 
-  async function loadRoles() {
-    const res = await fetch("/roles");
-    const data = await res.json();
+  // async function loadRoles() {
+  //   const res = await fetch("/roles");
+  //   const data = await res.json();
 
-    const ul = document.getElementById("roles-list");
-    ul.innerHTML = "";
-    data.roles.forEach(r => {
-      const li = document.createElement("li");
-      li.textContent = r;
-      ul.appendChild(li);
-    });
+  //   const ul = document.getElementById("roles-list");
+  //   ul.innerHTML = "";
+  //   data.roles.forEach(r => {
+  //     const li = document.createElement("li");
+  //     li.textContent = r;
+  //     ul.appendChild(li);
+  //   });
+  // }
+
+  async function loadRoles() {
+      const res = await fetch("/roles");
+      const data = await res.json();
+
+      const ul = document.getElementById("roles-list");
+      ul.innerHTML = "";
+
+      data.roles.forEach(role => {
+          const li = document.createElement("li");
+          li.className = "role-item";
+
+          const isDefault = ["Administrator", "User"].includes(role);
+
+          li.innerHTML = `
+              <span class="role-name">${role}</span>
+
+              <div class="role-actions">
+                  ${isDefault 
+                    ? `<span class="role-badge">Default</span>`
+                    : `
+                      <button class="btn-edit" onclick="editRole('${role}')">Edit</button>
+                      <button class="btn-delete-role" onclick="deleteRole('${role}')">Delete</button>
+                    `
+                  }
+              </div>
+          `;
+
+          ul.appendChild(li);
+      });
   }
+
+  function editRole(role) {
+    document.getElementById("old-role-name").value = role;
+    document.getElementById("edit-role-new-name").value = role;
+
+    document.getElementById("edit-role-modal").style.display = "flex";
+  }
+
+  function closeEditRole() {
+    document.getElementById("edit-role-modal").style.display = "none";
+  }
+
+  document.getElementById("edit-role-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const oldRole = document.getElementById("old-role-name").value;
+  const newRole = document.getElementById("edit-role-new-name").value.trim();
+
+  if (!newRole || newRole === oldRole) return;
+
+  const res = await fetch("/update-role", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ oldRole, newRole })
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    showPopup("Role updated successfully", "success");
+    closeEditRole();
+    loadRoles();
+    loadRoleOptions();
+  } else {
+    showPopup(data.message || "Failed to update role", "error");
+  }
+});
+
+
+
+
+  async function deleteRole(role) {
+    if (!confirm(`Delete role "${role}"?`)) return;
+
+    const res = await fetch("/delete-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+        showPopup("Role deleted", "success");
+        loadRoles();
+        loadRoleOptions();
+    } else {
+        showPopup(data.message, "error");
+    }
+}
+
+
+
+
 
   async function loadRoleOptions() {
     const res = await fetch("/roles");
