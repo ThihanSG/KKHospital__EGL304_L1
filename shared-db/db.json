@@ -31,10 +31,18 @@
       "status": "active"
     },
     {
+      "username": "Han",
+      "password": "$2b$10$3adPW7qlbH8fTABFW.l4NuidwYjpQXWreRqjvJxKQu3v8f4GNuHBS",
+      "role": "Staff",
+      "status": "active",
+      "createdBy": "Admin"
+    },
+    {
       "username": "Thi",
-      "password": "$2b$10$JtAcSQMYIvS9vil5GV6.Q.0mhIgpvGt.rG7JWduXRKIcAr8o9baxu",
+      "password": "$2b$10$70RsR1VLLphnWl95k8.ppeC69NXYVe8qPeCHLpHuYtxR/qucJPaAW",
       "role": "User",
-      "status": "active"
+      "status": "pending",
+      "createdBy": "Nurse1"
     }
   ],
   "patients": [
@@ -89,7 +97,7 @@
     }
   ],
   "activeUser": "Admin",
-  "lastActivity": 1766242007334,
+  "lastActivity": 1767894467278,
   "activityLog": [
     {
       "timestamp": 1765708164445,
@@ -110,28 +118,22 @@
       "details": "Administrator"
     },
     {
-      "timestamp": 1766159645046,
+      "timestamp": 1767894166752,
+      "user": "Admin",
+      "action": "Deleted user",
+      "details": "Username: Thi"
+    },
+    {
+      "timestamp": 1767894238998,
       "user": "Admin",
       "action": "Created user",
+      "details": "Username: Han, Role: Staff"
+    },
+    {
+      "timestamp": 1767894262337,
+      "user": "Nurse1",
+      "action": "Account requested",
       "details": "Username: Thi, Role: User"
-    },
-    {
-      "timestamp": 1766241810807,
-      "user": "Admin",
-      "action": "Updated role",
-      "details": "Staff → Staff v2"
-    },
-    {
-      "timestamp": 1766241824501,
-      "user": "Admin",
-      "action": "Deleted role",
-      "details": "Staff v2"
-    },
-    {
-      "timestamp": 1766241829028,
-      "user": "Admin",
-      "action": "Created role",
-      "details": "Staff"
     }
   ],
   "files": [

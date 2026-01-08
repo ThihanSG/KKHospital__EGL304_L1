@@ -7,10 +7,6 @@
   <title>Home - KK Hospital</title>
   <link rel="stylesheet" href="/index.css">
 
-  <style>
-
-
-  </style>
 </head>
 
 <body>
@@ -111,6 +107,7 @@
           <tr>
             <th>Username</th>
             <th>Role</th>
+            <th>Status</th> 
             <th>Actions</th>
           </tr>
         </thead>
@@ -185,28 +182,25 @@
       </div>
     </div>
 
-
-
-
-
-
     <!-- =============================
          Patient Record
     ============================== -->
     <div id="tab-add-patient" class="tab-section" style="display: none;">
       <h1>Patient Records</h1>
-      <form class="create-patient-form">
-        <input type="text" id="patient-name" placeholder="Name" required>
-        <input type="text" id="patient-contact" placeholder="Contact Number" required>
-        <input type="text" id="patient-history" placeholder="Medical History" required>
-        <select id="patient-ward" required>
-          <option value="" disabled selected>Select Ward</option>
-          <option>Ward 2C</option>
-          <option>Ward 3A</option>
-          <option>Ward 4B</option>
-        </select>
-        <button id="addPatientBtn" class="action-btn">Add Patient</button>
-      </form>
+
+      <!-- Search + Add Button Row -->
+      <div class="search-add-container">
+        <input 
+          type="text" 
+          id="patient-search" 
+          placeholder="Search by ID, name, ward, or contact…" 
+          class="search-input"
+        />
+        <button id="openAddPatientModal" class="action-btn">
+          + Add Patient
+        </button>
+      </div>
+
 
       <table class="patients-table">
         <thead>
@@ -224,6 +218,47 @@
         </tbody>
       </table>
     </div>
+
+
+    <!-- ADD PATIENT MODAL -->
+    <div id="add-patient-modal" class="modal">
+      <div class="modal-content">
+        <h3>Add Patient</h3>
+
+        <form id="add-patient-form">
+          <div class="input-group">
+            <label>Name</label>
+            <input type="text" id="patient-name" required>
+          </div>
+
+          <div class="input-group">
+            <label>Contact Number</label>
+            <input type="text" id="patient-contact" required>
+          </div>
+
+          <div class="input-group">
+            <label>Medical History</label>
+            <input type="text" id="patient-history" required>
+          </div>
+
+          <div class="input-group">
+            <label>Ward</label>
+            <select id="patient-ward" required>
+              <option value="" disabled selected>Select Ward</option>
+              <option>Ward 2C</option>
+              <option>Ward 3A</option>
+              <option>Ward 4B</option>
+            </select>
+          </div>
+
+          <div class="modal-buttons">
+            <button type="submit" class="btn-save">Add</button>
+            <button type="button" class="btn-cancel" onclick="closeAddPatientModal()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
 
     <!-- =============================
          UPDATE USER MODAL
@@ -423,7 +458,8 @@
         const res = await fetch("/create-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, password, role }) });
         const data = await res.json();
         if (data.success) {
-          showPopup("User request submitted. Awaiting admin approval.", "success");
+          const type = data.message.includes("request") ? "info" : "success";
+          showPopup(data.message, type);
           e.target.reset();
         } else showPopup("Error: " + data.message, "error");
       } catch (err) { showPopup("Server error: " + err.message, "error"); }
@@ -441,14 +477,27 @@
       data.users.forEach(u => {
         const tr = document.createElement("tr");
 
+        const statusLabel =
+          u.status === "pending"
+            ? `<span class="status pending">Pending approval</span>`
+            : `<span class="status approved">Approved</span>`;
+
         tr.innerHTML = `
           <td>${u.username}</td>
           <td>${u.role}</td>
+          <td>${statusLabel}</td>
           <td>
-            <button class="btn-update" data-username="${u.username}" data-role="${u.role}" onclick="showUpdatePopup(event)">Update</button>
-            <button class="btn-remove" data-username="${u.username}" onclick="deleteUser(event)">Delete</button>
+            ${
+              u.status === "pending"
+                ? `<em style="color:#999">Awaiting approval</em>`
+                : `
+                  <button class="btn-update" data-username="${u.username}" data-role="${u.role}" onclick="showUpdatePopup(event)">Update</button>
+                  <button class="btn-remove" data-username="${u.username}" onclick="deleteUser(event)">Delete</button>
+                `
+            }
           </td>
         `;
+
 
         tbody.appendChild(tr);
       });
@@ -486,7 +535,7 @@
 
 
     // create Patient
-    const createPatientForm = document.querySelector(".create-patient-form");
+    const createPatientForm = document.getElementById("add-patient-form");
     createPatientForm.addEventListener("submit", async e => {
       e.preventDefault();
       const name = document.getElementById("patient-name").value.trim();
@@ -500,49 +549,94 @@
       try {
         const res = await fetch("/create-patient", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, contactNumber, medicalHistory, ward }) });
         const data = await res.json();
-        if (data.success) { showPopup("Patient added successfully!", "success"); createPatientForm.reset(); loadPatients(); }
+        if (data.success) { 
+          showPopup("Patient added successfully!", "success"); 
+          createPatientForm.reset(); 
+          loadPatients(); 
+          closeAddPatientModal(); 
+        }
         else { showPopup("Error: " + data.message, "error"); }
       } catch (err) { showPopup("Server error: " + err.message, "error"); }
     });
 
-    // load patients
+    let allPatients = [];   // store all patients globally
+
     async function loadPatients() {
       try {
         const res = await fetch("/patients");
         const data = await res.json();
         if (!data.success) return;
-        const tbody = document.getElementById("patients-list");
-        tbody.innerHTML = "";
-        data.patients.forEach(p => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-                    <td>${String(p.id).padStart(3, "0")}</td>
-                    <td>${p.name}</td>
-                    <td>${p.contactNumber}</td>
-                    <td>${p.medicalHistory}</td>
-                    <td>${p.ward}</td>
-                    <td>
-                        <button class="btn-remove-patient" data-id="${p.id}">Delete</button>
-                    </td>
-                `;
-          tbody.appendChild(tr);
-        });
 
-        // delete patient
-        document.querySelectorAll(".btn-remove-patient").forEach(btn => {
-          btn.addEventListener("click", async e => {
-            const id = Number(e.target.dataset.id);
-            if (!confirm(`Delete patient?`)) return;
-            try {
-              const res = await fetch(`/patients/${id}`, { method: "DELETE" });
-              const result = await res.json();
-              if (result.success) { showPopup("Patient deleted successfully!", "success"); loadPatients(); }
-              else { showPopup("Error: " + result.message, "error"); }
-            } catch (err) { showPopup("Server error: " + err.message, "error"); }
-          });
-        });
-      } catch (err) { showPopup("Error loading patients: " + err.message, "error"); }
+        allPatients = data.patients || [];
+        renderPatients(allPatients);
+
+      } catch (err) {
+        showPopup("Error loading patients: " + err.message, "error");
+      }
     }
+
+    function renderPatients(patients) {
+      const tbody = document.getElementById("patients-list");
+      tbody.innerHTML = "";
+
+      if (patients.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="padding:20px; text-align:center;">
+              No patients found
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      patients.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${String(p.id).padStart(3, "0")}</td>
+          <td>${p.name}</td>
+          <td>${p.contactNumber}</td>
+          <td>${p.medicalHistory}</td>
+          <td>${p.ward}</td>
+          <td>
+            <button class="btn-remove-patient" data-id="${p.id}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // re-bind delete buttons
+      document.querySelectorAll(".btn-remove-patient").forEach(btn => {
+        btn.addEventListener("click", async e => {
+          const id = Number(e.target.dataset.id);
+          if (!confirm(`Delete patient?`)) return;
+
+          const res = await fetch(`/patients/${id}`, { method: "DELETE" });
+          const result = await res.json();
+
+          if (result.success) {
+            showPopup("Patient deleted successfully!", "success");
+            loadPatients();
+          } else {
+            showPopup("Error: " + result.message, "error");
+          }
+        });
+      });
+    }
+
+    document.getElementById("patient-search")?.addEventListener("input", e => {
+      const keyword = e.target.value.toLowerCase();
+
+      const filtered = allPatients.filter(p =>
+        String(p.id).padStart(3, "0").includes(keyword) ||
+        p.name.toLowerCase().includes(keyword) ||
+        p.contactNumber.includes(keyword) ||
+        p.ward.toLowerCase().includes(keyword)
+      );
+
+      renderPatients(filtered);
+    });
+
     applyRolePermissions();
 
     // display work schedule
@@ -594,7 +688,6 @@
       document.getElementById("update-username").value = username;
       updateForm.dataset.originalUsername = username;
 
-      // 🔥 Load roles dynamically + preselect
       loadUpdateRoleOptions(role);
 
       updateModal.style.display = "flex";
@@ -979,44 +1072,42 @@
       });
   }
 
-  function editRole(role) {
-    document.getElementById("old-role-name").value = role;
-    document.getElementById("edit-role-new-name").value = role;
+    function editRole(role) {
+      document.getElementById("old-role-name").value = role;
+      document.getElementById("edit-role-new-name").value = role;
 
-    document.getElementById("edit-role-modal").style.display = "flex";
-  }
+      document.getElementById("edit-role-modal").style.display = "flex";
+    }
 
-  function closeEditRole() {
-    document.getElementById("edit-role-modal").style.display = "none";
-  }
+    function closeEditRole() {
+      document.getElementById("edit-role-modal").style.display = "none";
+    }
 
-  document.getElementById("edit-role-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+    document.getElementById("edit-role-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const oldRole = document.getElementById("old-role-name").value;
-  const newRole = document.getElementById("edit-role-new-name").value.trim();
+    const oldRole = document.getElementById("old-role-name").value;
+    const newRole = document.getElementById("edit-role-new-name").value.trim();
 
-  if (!newRole || newRole === oldRole) return;
+    if (!newRole || newRole === oldRole) return;
 
-  const res = await fetch("/update-role", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ oldRole, newRole })
+    const res = await fetch("/update-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ oldRole, newRole })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showPopup("Role updated successfully", "success");
+      closeEditRole();
+      loadRoles();
+      loadRoleOptions();
+    } else {
+      showPopup(data.message || "Failed to update role", "error");
+    }
   });
-
-  const data = await res.json();
-
-  if (data.success) {
-    showPopup("Role updated successfully", "success");
-    closeEditRole();
-    loadRoles();
-    loadRoleOptions();
-  } else {
-    showPopup(data.message || "Failed to update role", "error");
-  }
-});
-
-
 
 
   async function deleteRole(role) {
@@ -1081,13 +1172,15 @@
     });
   }
 
+  const addPatientModal = document.getElementById("add-patient-modal");
 
+  document.getElementById("openAddPatientModal")?.addEventListener("click", () => {
+    addPatientModal.style.display = "flex";
+  });
 
-
-
-
-
-
+  function closeAddPatientModal() {
+    addPatientModal.style.display = "none";
+  }
 
   </script>
 </body>

@@ -220,16 +220,13 @@ app.get("/status", async (req, res) => {
     });
 });
 
-// -------------------------------------------------
-// Create User: For account with Admin Role
-// -------------------------------------------------
-// -------------------------------------------------
-// Create User (OPEN REGISTRATION → pending approval)
-// -------------------------------------------------
+
+
 app.post("/create-user", async (req, res) => {
     try {
         const { username, password, role } = req.body;
         const createdBy = req.cookies.user4000 || "Public";
+
         await db.read();
 
         if (!username || !password || !role) {
@@ -240,27 +237,38 @@ app.post("/create-user", async (req, res) => {
             return res.json({ success: false, message: "Username already exists" });
         }
 
+        const creator = db.data.users.find(u => u.username === createdBy);
+
+        // ⭐ CORE LOGIC
+        const status =
+            creator && creator.role === "Administrator"
+                ? "active"      // auto approve
+                : "pending";    // needs admin approval
+
         const hashed = await bcrypt.hash(password, 10);
 
         db.data.users.push({
             username,
             password: hashed,
             role,
-            status: "pending" ,
-            createdBy 
+            status,
+            createdBy
         });
 
         await db.write();
 
         await logActivity(
-            username,
-            "Account requested",
-            `Requested role: ${role}`
+            createdBy,
+            status === "active" ? "Created user" : "Account requested",
+            `Username: ${username}, Role: ${role}`
         );
 
         res.json({
             success: true,
-            message: "Account request submitted. Awaiting admin approval."
+            message:
+                status === "active"
+                    ? "User created successfully."
+                    : "Account request submitted. Awaiting admin approval."
         });
 
     } catch (err) {
@@ -268,6 +276,7 @@ app.post("/create-user", async (req, res) => {
         res.status(500).json({ success: false, message: "Server error" });
     }
 });
+
 
 
 // -------------------------------------------------
@@ -284,7 +293,8 @@ app.get("/users", async (req, res) => {
 
     const users = db.data.users.map(u => ({
         username: u.username,
-        role: u.role
+        role: u.role,
+        status: u.status
     }));
 
     return res.json({ success: true, users });
@@ -365,8 +375,15 @@ app.get("/user-requests", async (req, res ) => {
 
 // To approve user 
 app.post("/approve-user", async (req, res) => {
-    const {username} = req.body;
+    const adminUser = req.cookies.user4000;
+    const { username } = req.body;
+
     await db.read();
+
+    const admin = db.data.users.find(u => u.username === adminUser);
+    if (!admin || admin.role !== "Administrator") {
+        return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
 
     const user = db.data.users.find(u => u.username === username);
     if (!user) {
@@ -376,9 +393,10 @@ app.post("/approve-user", async (req, res) => {
     user.status = "active";
     await db.write();
 
-    await logActivity("Admin", "Approved user", `Username: ${username}`);
-    res.json({success: true});
+    await logActivity(adminUser, "Approved user", `Username: ${username}`);
+    res.json({ success: true });
 });
+
 
 // To Reject User
 app.post("/reject-user", async (req, res) => {
@@ -393,7 +411,9 @@ app.post("/reject-user", async (req, res) => {
     db.data.users.splice(index, 1);
     await db.write();
     
-    await logActivity("Admin", "Rejected user", `Username: ${username}`);
+    const adminUser = req.cookies.user4000;
+    await logActivity(adminUser, "Rejected user", `Username: ${username}`);
+
     res.json({success: true});
 
 });

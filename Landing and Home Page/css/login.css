@@ -87,11 +87,10 @@ button:hover {
 
 }
 
-/* Login header and description */
 .login-container h2 {
     font-size: 24px;
     font-weight: 600;
-    color: #0d68c4;      /* matches login button color */
+    color: #0d68c4;      
     margin-bottom: 10px;
     letter-spacing: 0.5px;
 }
@@ -126,15 +125,15 @@ button:hover {
 }
 
 .popup.info {
-    background-color: #007bff; /* blue */
+    background-color: #007bff; 
 }
 
 .popup.success {
-    background-color: #28a745; /* green */
+    background-color: #28a745; 
 }
 
 .popup.error {
-    background-color: #e74c3c; /* red, brighter than black */
+    background-color: #e74c3c; 
 }
 
 @keyframes slideIn {
@@ -144,13 +143,13 @@ button:hover {
 
 .login-logo {
     display: block;
-    margin: 0 auto 20px auto; /* center the logo and add space below */
-    max-width: 200px; /* adjust size as needed */
+    margin: 0 auto 20px auto; 
+    max-width: 200px; 
     height: auto;
 }
 
 .popup.success {
-    background-color: #28a745; /* green */
+    background-color: #28a745; 
 }
 
 .password-wrapper {
@@ -158,16 +157,14 @@ button:hover {
     width: 100%;
 }
 
-/* Make password input wide */
 .password-wrapper input {
     width: 100%;
     flex-grow: 1;
 }
 
-/* Make the SHOW button narrow */
 .toggle-password {
-    width: 60px;            /* <<< MAKE BUTTON NARROW HERE */
-    padding: 8px 0;         /* thinner button */
+    width: 60px;            
+    padding: 8px 0;         
     margin-left: 6px;
     font-size: 12px;
     cursor: pointer;
